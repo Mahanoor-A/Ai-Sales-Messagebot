@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+node_modules/
+dist/
+.vscode/
+.idea/
+
+# Source zip of the original Trade Builder repo (F:\Foundry\foundryfx) used
+# only as a local reference for extracting content — this is a standalone
+# app per spec and must not ship or share that codebase.
+foundryfx.zip
