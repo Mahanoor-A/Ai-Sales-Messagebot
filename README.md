@@ -121,6 +121,13 @@ pytest
 
 ## Deployment notes
 
+- **Render:** this repo includes a `render.yaml` Blueprint. In the Render
+  dashboard: **New +** → **Blueprint** → pick this GitHub repo → Render reads
+  `render.yaml` and creates the web service (`pip install -r requirements.txt`,
+  `uvicorn app.main:app --host 0.0.0.0 --port $PORT`, root dir `backend`).
+  You'll be prompted to fill in the two secret env vars it leaves blank
+  (`OPENAI_API_KEY` required, `AI_API_TOKEN` optional) — everything else
+  deploys automatically on every push to `master`.
 - **Render/Cloud Run** both work; the two required env vars are
   `OPENAI_API_KEY` and `AI_MODEL` (default `gpt-4o-mini`, override per quality
   or budget). `AI_TEMPERATURE` defaults to `0.6`.
