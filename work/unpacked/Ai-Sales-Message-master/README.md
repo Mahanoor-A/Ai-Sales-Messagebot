@@ -1,9 +1,8 @@
-# Foundry FX — Context-Aware Trade Builder
+# Foundry FX — AI Sales Message (Feature 2)
 
-Makes the Trade Builder's **Review & Send** workflow polish a short advisor note
+Makes the Trade Builder's **Review & Send** modal polish a short advisor note
 into a ready-to-send client message, using one focused OpenAI call grounded in
-the deal, selected product family, client profile, and advisor's AI setup — no
-invented facts or external feeds.
+the deal's own data — no invented facts, no external feeds.
 
 This is a **new standalone repo**: the AI backend service plus a self-contained
 demo of the modal so the feature is testable end to end without touching the
@@ -42,11 +41,10 @@ Start the service (serves the demo at `/` and the API at `/v1/ai/sales-message`)
 uvicorn app.main:app --reload --port 8000
 ```
 
-Open http://localhost:8000 — pick a product family and structure, complete the
-client profile, type (or dictate) the note, and **Draft with AI**. The polished
-message lands in the editable Intro message box; every draft stays in the strip
-above it (replace-with-history). The **Send Email** button is **MOCKED** and does
-not email anything.
+Open http://localhost:8000 — pick a product, type (or dictate) the note, and
+**Draft with AI**. The polished message lands in the Intro message box; every
+draft stays in the strip above it (replace-with-history). *Draft, **mock**
+buttons do not email anything.*
 
 ## What the AI gets
 

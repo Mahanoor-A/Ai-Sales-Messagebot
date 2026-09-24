@@ -33,11 +33,6 @@ SYSTEM_PROMPT = (
     "margin, desk revenue, commission, spread, or any other internal pricing "
     "component, even if such a term appears in the advisor's note or the data — omit "
     "it rather than repeat it.\n"
-    "Use the advisor's configured writing style, tone and sales positioning as editorial "
-    "direction, but never let those preferences introduce facts. Treat the Mkt WHY, "
-    "Client WHY and Product WHY guidance as a framework only: use it to organize facts "
-    "already present in the deal, profile, product outline or advisor note. If a WHY "
-    "section contains a claim that is not supported by the supplied facts, omit the claim. "
     "Write the message as polished, ready-to-send email prose: 2-4 short paragraphs, "
     "professional and plain, no jargon. Keep every number and level exactly as "
     "provided (do not round, convert or 'clean up' figures). If an amount has a "
@@ -62,9 +57,6 @@ ALTERNATIVE_KEY_INSTRUCTION = (
 
 def build_user_message(req: SalesMessageRequest) -> str:
     lines = ["DEAL AS AGREED (source of truth — do not alter):"]
-    if req.product_family:
-        lines.append(f"- Product family: {req.product_family}")
-    lines.append(f"- Product: {req.product}")
     lines += [f"- {key}: {value}" for key, value in req.deal_terms.items() if value]
 
     if req.product_outline:
@@ -77,56 +69,12 @@ def build_user_message(req: SalesMessageRequest) -> str:
     lines.append("\nPRODUCT RISKS (as provided by the desk):")
     lines += [f"- {r}" for r in req.product_risks] or ["- none"]
 
-    if any(
-        [
-            req.client_name,
-            req.client_company,
-            req.client_industry,
-            req.client_risk_appetite,
-            req.client_hedging_horizon,
-            req.client_functional_currency,
-            req.client_notes,
-        ]
-    ):
-        lines.append("\nCLIENT PROFILE (reference only; do not invent beyond it):")
+    if req.client_name or req.client_company:
+        lines.append("\nCLIENT:")
         if req.client_name:
             lines.append(f"- contact name: {req.client_name}")
         if req.client_company:
             lines.append(f"- company: {req.client_company}")
-        if req.client_industry:
-            lines.append(f"- industry: {req.client_industry}")
-        if req.client_risk_appetite:
-            lines.append(f"- risk appetite: {req.client_risk_appetite}")
-        if req.client_hedging_horizon:
-            lines.append(f"- hedging horizon: {req.client_hedging_horizon}")
-        if req.client_functional_currency:
-            lines.append(f"- functional currency: {req.client_functional_currency}")
-        if req.client_notes:
-            lines.append(f"- client context and notes: {req.client_notes}")
-
-    if any(
-        [
-            req.writing_style,
-            req.tone,
-            req.sales_positioning,
-            req.master_mkt_why,
-            req.master_client_why,
-            req.master_product_why,
-        ]
-    ):
-        lines.append("\nADVISOR AI SETUP (editorial direction, never a source of new facts):")
-        if req.writing_style:
-            lines.append(f"- writing style: {req.writing_style}")
-        if req.tone:
-            lines.append(f"- tone: {req.tone}")
-        if req.sales_positioning:
-            lines.append(f"- sales positioning: {req.sales_positioning}")
-        if req.master_mkt_why:
-            lines.append(f"- Mkt WHY guidance: {req.master_mkt_why}")
-        if req.master_client_why:
-            lines.append(f"- Client WHY guidance: {req.master_client_why}")
-        if req.master_product_why:
-            lines.append(f"- Product WHY guidance: {req.master_product_why}")
 
     lines.append("\nADVISOR'S ROUGH NOTE (reword and polish this into the message):")
     lines.append(req.advisor_note)

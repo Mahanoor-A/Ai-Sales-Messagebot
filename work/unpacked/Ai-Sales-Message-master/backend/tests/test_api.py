@@ -95,41 +95,6 @@ def test_product_outline_is_included_as_background():
     assert "binding agreement" in msg
 
 
-def test_builder_message_carries_client_profile_and_ai_setup():
-    req = SalesMessageRequest(
-        product="FEC",
-        product_family="Linear / Vanilla",
-        advisor_note="Focus on budget certainty.",
-        client_industry="Import & distribution",
-        client_risk_appetite="Balanced",
-        client_hedging_horizon="3–12 months",
-        client_functional_currency="AUD",
-        client_notes="Needs USD 3m per month.",
-        writing_style="Relationship-first",
-        tone="Warm",
-        sales_positioning="Lead with the client's practical outcome.",
-        master_mkt_why="Use only supplied market rationale.",
-        master_client_why="Connect the stated objective to the structure.",
-        master_product_why="Explain benefits and risks plainly.",
-    )
-    msg = ai.build_user_message(req)
-
-    for expected in [
-        "Product family: Linear / Vanilla",
-        "industry: Import & distribution",
-        "risk appetite: Balanced",
-        "hedging horizon: 3–12 months",
-        "functional currency: AUD",
-        "Needs USD 3m per month.",
-        "writing style: Relationship-first",
-        "tone: Warm",
-        "Mkt WHY guidance",
-        "Client WHY guidance",
-        "Product WHY guidance",
-    ]:
-        assert expected in msg
-
-
 # ---------------------------------------------------------------------- #
 # Structured output: subject line + alternative version toggles          #
 # ---------------------------------------------------------------------- #

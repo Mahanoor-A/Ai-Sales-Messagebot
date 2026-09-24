@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Foundry FX — AI Sales Message</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./data/product-schemas.sample.js"></script>
+</head>
+<body>
+  <header class="demo-bar">
+    <span class="demo-pill">Feature 2 demo</span>
+    <h1>AI Sales Message</h1>
+    <p class="demo-sub">Standalone preview of the Review &amp; Send “AI Sales Message” box. Firefox/Safari lack dictation — type the note instead.</p>
+  </header>
+
+  <main class="modal-backdrop is-open">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <rect width="48" height="48" rx="10" fill="#111844"/>
+            <path d="M24 6 40 15.2v17.6L24 42 8 32.8V15.2L24 6Z" stroke="#FFFFFF" stroke-width="2.2"/>
+            <path d="M24 15.5 32 20.1v8.3L24 33l-8-4.6v-8.3l8-4.6Z" stroke="#7288AE" stroke-width="1.8"/>
+            <path d="M24 15.5V24m0 0 8-3.9M24 24l-8-3.9" stroke="#7288AE" stroke-width="1.3" opacity="0.8"/>
+          </svg>
+          <h2 class="modal-title">Review &amp; send</h2>
+        </div>
+        <button class="btn btn-icon" type="button" title="Close" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+      </div>
+
+      <div class="email-fmt-tabs" role="tablist" aria-label="Email format">
+        <button class="email-fmt-tab is-active" type="button" role="tab" aria-selected="true" id="fmtTabFull" data-fmt="full">
+          <span class="eft-title">Full Termsheet</span>
+          <span class="eft-sub">complete pricing &amp; legals</span>
+        </button>
+        <button class="email-fmt-tab" type="button" role="tab" aria-selected="false" id="fmtTabHighlights" data-fmt="highlights">
+          <span class="eft-title">Deal Highlights</span>
+          <span class="eft-sub">key levels &amp; payoff only</span>
+        </button>
+      </div>
+
+      <div class="modal-body email-fmt-panel">
+        <div class="form-grid">
+
+          <div class="email-recipients">
+            <div class="field"><label for="demoEmailTo">To · client</label>
+              <div class="email-to-chip"><span class="etc-dot" aria-hidden="true"></span><span class="etc-addr" id="demoEmailTo">—</span><span class="etc-lock" title="Fixed to this deal's client record, same as the real Trade Builder — the advisor can't retype it here, only Cc/Bcc are free text.">locked</span></div>
+            </div>
+            <div class="field"><label for="demoBcc">Bcc</label> <input id="demoBcc" type="text" placeholder="Add an email address" value="desk@foundryfx.com"></div>
+            <div class="field"><label for="demoCc">Cc</label> <input id="demoCc" type="text" placeholder="Add an email address"></div>
+          </div>
+
+          <div class="field span-12"><label for="demoSubject">Subject</label> <input id="demoSubject" type="text" value="Your AUD/USD FX hedge — indicative pricing"></div>
+
+          <div class="field span-12">
+            <div class="field-label-row"><label for="demoIntro">Intro message</label>
+              <button class="btn btn-soft btn-xs" type="button" id="copyIntroBtn" title="Copy to clipboard">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copy
+              </button>
+            </div>
+            <textarea id="demoIntro" rows="5" placeholder="The polished message lands here. Edit freely — nothing is sent until you hit Send Email."></textarea>
+            <p class="field-hint">Shown as a short note above the termsheet. Use the <strong>AI Sales Message</strong> button (bottom right) to draft it.</p>
+          </div>
+
+          <div class="field span-12">
+            <div class="email-trade-preview">
+              <div class="email-trade-chart-shell">
+                <div class="email-trade-head">
+                  <div class="email-trade-string mono-field" id="demoTradeString">AUDUSD · Knock Out Conv. (LEV)</div>
+                  <span class="email-fmt-chip is-full" id="demoFmtChip">FULL TERMSHEET</span>
+                </div>
+                <div class="email-trade-chart-placeholder" id="demoFmtPlaceholder">termsheet / chart preview renders here in the builder</div>
+              </div>
+            </div>
+          </div>
+
+          <details class="span-12 deal-context" id="dealContext" open>
+            <summary>Deal context sent to the AI <span class="dc-sub">(what the endpoint receives)</span></summary>
+            <div class="dc-grid">
+              <div class="field"><label for="dcProduct">Product</label>
+                <select id="dcProduct"></select>
+                <span class="field-hint" id="dcProductMeta"></span>
+              </div>
+              <div class="field"><label for="dcPair">Pair</label> <input id="dcPair" type="text"></div>
+              <div class="field"><label for="dcDirection">Direction</label> <input id="dcDirection" type="text"></div>
+              <div class="field"><label for="dcNotional">Notional</label> <input id="dcNotional" type="text" class="mono-field"></div>
+              <div class="field"><label for="dcClientName">Client name</label> <input id="dcClientName" type="text" value="Ada Novik"></div>
+              <div class="field"><label for="dcClientCompany">Client company</label> <input id="dcClientCompany" type="text" value="Novik Trading"></div>
+            </div>
+            <div class="dc-grid dc-grid-dynamic" id="dcDynamicFields"></div>
+            <div class="dc-outline" id="dcOutlineWrap" hidden>
+              <h4>Product outline <span class="dc-sub">(background — the AI does not invent beyond this)</span></h4>
+              <p id="dcOutline"></p>
+            </div>
+            <div class="dc-grounding">
+              <div class="dc-grounding-col">
+                <h4>Benefits</h4>
+                <ul id="dcBenefits"></ul>
+              </div>
+              <div class="dc-grounding-col risks">
+                <h4>Risks</h4>
+                <ul id="dcRisks"></ul>
+              </div>
+            </div>
+          </details>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-soft" type="button" id="cancelDemo">Cancel</button>
+        <button class="btn btn-primary" type="button" id="mockSend">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg>
+          Send Email
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div class="ai-fab-root">
+    <section class="ai-popup" id="aiPopup" role="dialog" aria-labelledby="aiSalesLabel" aria-hidden="true">
+      <div class="ai-popup-head">
+        <div>
+          <span class="ai-popup-eyebrow">AI Sales Message</span>
+          <h3 id="aiSalesLabel">Draft a client message</h3>
+        </div>
+        <button class="btn btn-icon" type="button" id="aiPopupClose" title="Close" aria-label="Close">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+
+      <span class="ai-sales-hint" id="aiHint">Simply describe your sales pitch in short for a polished message to your client. Product logic / Mkt logic / Client portfolio fit.</span>
+
+      <div class="ai-note-row">
+        <textarea id="aiNote" rows="3" placeholder="e.g. Client wants protection around their budget rate. Highlight zero upfront premium and participation in an AUD recovery. Mention the knock-in exposure clearly."></textarea>
+        <button class="btn btn-icon mic-btn" id="micBtn" type="button" title="Dictate the note" aria-label="Dictate the note">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>
+        </button>
+      </div>
+
+      <div class="ai-toggle-row">
+        <label class="ai-toggle"><input type="checkbox" id="toggleSubject"> Suggest a subject line</label>
+        <label class="ai-toggle"><input type="checkbox" id="toggleAlt"> Show alternative version</label>
+      </div>
+
+      <div class="ai-actions">
+        <button class="btn btn-primary" id="draftBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+          <span id="draftBtnLabel">Draft with AI</span>
+        </button>
+        <span class="ai-status" id="aiStatus" role="status"></span>
+      </div>
+
+      <div class="ai-history" id="aiHistory" hidden>
+        <span class="ai-history-label">Draft history</span>
+        <div class="ai-history-chips" id="aiHistoryChips"></div>
+        <span class="ai-history-count" id="aiHistoryCount"></span>
+      </div>
+
+      <div class="ai-alt" id="aiAlt" hidden>
+        <div class="ai-alt-head">
+          <span class="ai-alt-label">Alternative angle <span class="ai-alt-flag" title="Interpretation of the spec's open &quot;Show alternative&quot; item — same facts, different tone/angle. Confirm intent with Hannah before treating this as final.">⚑ interpretation, confirm w/ Hannah</span></span>
+          <button class="btn btn-soft btn-xs" type="button" id="useAltBtn">Use this instead</button>
+        </div>
+        <p class="ai-alt-text" id="aiAltText"></p>
+      </div>
+
+      <p class="ai-popup-foot">Populates the Intro message below. Nothing is ever sent from here — review it and hit Send Email yourself.</p>
+    </section>
+
+    <button class="ai-fab" id="aiFab" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="aiPopup">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 1.9 4.9L19 9.8l-4.9 1.9L12.2 16.6l-1.9-4.9L5.4 9.8l4.9-1.9L12 3Z"></path><path d="M19 15.5 19.8 18l2.5.8-2.5.8L19 22l-.8-2.4-2.5-.8 2.5-.8Z"></path></svg>
+      <span>AI Sales Message</span>
+    </button>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

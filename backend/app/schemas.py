@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 
 class SalesMessageRequest(BaseModel):
     product: str = Field(..., min_length=1, max_length=120)
+    product_family: str | None = Field(default=None, max_length=120)
     deal_terms: dict[str, str] = Field(default_factory=dict)
     product_outline: list[str] = Field(default_factory=list)
     product_benefits: list[str] = Field(default_factory=list)
@@ -10,6 +11,17 @@ class SalesMessageRequest(BaseModel):
     advisor_note: str = Field(..., min_length=1, max_length=5000)
     client_name: str | None = Field(default=None, max_length=200)
     client_company: str | None = Field(default=None, max_length=300)
+    client_industry: str | None = Field(default=None, max_length=200)
+    client_risk_appetite: str | None = Field(default=None, max_length=120)
+    client_hedging_horizon: str | None = Field(default=None, max_length=120)
+    client_functional_currency: str | None = Field(default=None, max_length=12)
+    client_notes: str | None = Field(default=None, max_length=4000)
+    writing_style: str | None = Field(default=None, max_length=120)
+    tone: str | None = Field(default=None, max_length=120)
+    sales_positioning: str | None = Field(default=None, max_length=2000)
+    master_mkt_why: str | None = Field(default=None, max_length=4000)
+    master_client_why: str | None = Field(default=None, max_length=4000)
+    master_product_why: str | None = Field(default=None, max_length=4000)
     suggest_subject: bool = False
     show_alternative: bool = False
 

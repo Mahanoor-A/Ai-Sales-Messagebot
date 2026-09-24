@@ -1,0 +1,74 @@
+{
+  "iteration": 1,
+  "mode": "generate",
+  "summary": "8 lane artifacts covering all 7 acceptance criteria (one criterion — AI dialogue draft endpoint — got both a browser check and a backend test since it is API-backed). Backend suite: 23 passed (20 pre-existing + 3 new tscheck tests). Browser checks: 7 passed.",
+  "passed": 8,
+  "failed": 0,
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "FX products are presented as families rather than one flat list",
+      "name": "product-family-grouping-updates",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "product-family-selector has >3 optgroups; default value 'Knock Out Conv. (LEV)' shows 'Knock-Out family' pill; selecting 'Accumulator' updates the family pill to contain 'Accumulator' and re-renders deal-dynamic-fields."
+    },
+    {
+      "criterion": "Client profile is available inside the builder",
+      "name": "client-profile-persists-localstorage",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Filled client-name/company/industry/risk/horizon/currency/notes with tscheck- values; client-why-value updated to include the new name; localStorage['foundryfx.clientProfile'] contains clientName/functionalCurrency; values survived a full page reload."
+    },
+    {
+      "criterion": "Each advisor can configure AI writing preferences",
+      "name": "ai-setup-drawer-save-persists",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "AI setup drawer opens with .setup-panel bounding box fully inside the 1280x800 viewport; writing style/tone/positioning/Mkt-Client-Product WHY edited and saved; localStorage['foundryfx.aiPreferences'] reflects writingStyle='Concise', tone='Direct', matching salesPositioning."
+    },
+    {
+      "criterion": "AI guidance is embedded in deal inputs",
+      "name": "ai-guidance-card-shows-why-and-cta",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "market/client/product-why-value non-empty, family pill non-empty; switching product to 'Seagull' changed product-why-value; Open AI dialogue CTA opens ai-dialogue-box (class is-open)."
+    },
+    {
+      "criterion": "The AI dialogue is larger and retains prior controls",
+      "name": "ai-dialogue-controls-and-close",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Dialogue bounding box >350x400px; multi-line advisor note accepted; Concise/Relationship-first quick-style buttons toggle is-active; subject/alternative checkboxes check; dictation button and draft-status node present; close button removes is-open class."
+    },
+    {
+      "criterion": "Generated or manually entered sales copy remains editable in Review & Send",
+      "name": "review-send-intro-editable-and-demo-send",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Intro textarea accepts and retains a tscheck-prefixed message across format-tab switches; Copy button clickable; Send Email sets status text 'Demo only — email not really sent...' confirming the mocked, non-sending demo action (source: app.js mockSend handler)."
+    },
+    {
+      "criterion": "The public desktop experience is polished and functional",
+      "name": "desktop-happy-path-no-console-errors",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "At 1440x900, header/deal-inputs/guidance-panel visible; AI setup drawer stayed fully on-screen; zero console errors and zero 4xx/5xx responses captured during the non-AI happy path."
+    },
+    {
+      "criterion": "AI guidance is embedded in deal inputs / AI dialogue draft action (API-backed, OPENAI_API_KEY not configured per briefing spec_deviations)",
+      "name": "test_tscheck_ai_sales_message_endpoint",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "httpx to real server :8001 — POST /v1/ai/sales-message with missing advisor_note returns 422 or 503 (key gate resolves before body validation); well-formed tscheck- payload returns 503 with 'key' in detail (no key configured, matches spec_deviations, not a crash); GET /healthz returns {status:'ok', key_configured:false}."
+    }
+  ],
+  "bugs": [],
+  "action_items": [],
+  "notes": [
+    "Backend suite total is 23 passed: 20 pre-existing tests in tests/test_api.py (prompt construction, structured output, bearer-token gate) plus 3 new tests in tests/test_tscheck_ai_sales_message_endpoint.py added this iteration.",
+    "The Review & Send workspace and Trade Builder inputs render as a single always-open page section in this build (not a separate route/modal overlay) — confirmed by DOM inspection; this does not violate any acceptance criterion.",
+    "OPENAI_API_KEY intentionally absent in this environment (spec_deviations) so a live 'Draft with AI' completion could not be exercised end-to-end; the 503 graceful-failure contract was verified instead, consistent with the briefing.",
+    "Send Email is confirmed MOCKED — verified via app.js source (mockSend handler) and UI status text; no real email is ever sent."
+  ]
+}

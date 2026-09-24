@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Foundry FX — AI Sales Message</title>
+  <meta name="description" content="Grounded AI sales messaging inside a focused FX trade builder workflow.">
+  <title>Foundry FX — Trade Builder</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -11,15 +12,17 @@
   <script src="./data/product-schemas.sample.js"></script>
 </head>
 <body>
-  <header class="demo-bar">
-    <span class="demo-pill">Feature 2 demo</span>
-    <h1>AI Sales Message</h1>
-    <p class="demo-sub">Standalone preview of the Review &amp; Send “AI Sales Message” box. Firefox/Safari lack dictation — type the note instead.</p>
+  <header class="demo-bar" data-testid="app-header">
+    <div class="brand-lockup">
+      <svg class="brand-mark brand-mark-lg" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="10" fill="#111844"/><path d="M24 6 40 15.2v17.6L24 42 8 32.8V15.2L24 6Z" stroke="#FFFFFF" stroke-width="2.2"/><path d="M24 15.5 32 20.1v8.3L24 33l-8-4.6v-8.3l8-4.6Z" stroke="#7288AE" stroke-width="1.8"/><path d="M24 15.5V24m0 0 8-3.9M24 24l-8-3.9" stroke="#7288AE" stroke-width="1.3" opacity="0.8"/></svg>
+      <div><span class="demo-pill" data-testid="app-environment-badge">Trade Builder · Demo</span><h1 data-testid="app-title">Build a considered hedge</h1><p class="demo-sub" data-testid="app-subtitle">Shape the deal, give the AI the right context, then carry an editable message into Review &amp; Send.</p></div>
+    </div>
+    <button class="btn btn-glass" type="button" id="openSetupTop" data-testid="ai-setup-open-button">AI setup <span aria-hidden="true">↗</span></button>
   </header>
 
   <main class="modal-backdrop is-open">
     <div class="modal modal-wide">
-      <div class="modal-header">
+      <div class="modal-header" data-testid="review-and-send-modal">
         <div class="modal-title-group">
           <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
             <rect width="48" height="48" rx="10" fill="#111844"/>
@@ -27,17 +30,17 @@
             <path d="M24 15.5 32 20.1v8.3L24 33l-8-4.6v-8.3l8-4.6Z" stroke="#7288AE" stroke-width="1.8"/>
             <path d="M24 15.5V24m0 0 8-3.9M24 24l-8-3.9" stroke="#7288AE" stroke-width="1.3" opacity="0.8"/>
           </svg>
-          <h2 class="modal-title">Review &amp; send</h2>
+          <div><h2 class="modal-title" data-testid="review-and-send-title">Review &amp; send</h2><span class="modal-kicker" data-testid="review-and-send-kicker">Client-ready message workspace</span></div>
         </div>
         <button class="btn btn-icon" type="button" title="Close" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
       </div>
 
       <div class="email-fmt-tabs" role="tablist" aria-label="Email format">
-        <button class="email-fmt-tab is-active" type="button" role="tab" aria-selected="true" id="fmtTabFull" data-fmt="full">
+        <button class="email-fmt-tab is-active" type="button" role="tab" aria-selected="true" id="fmtTabFull" data-fmt="full" data-testid="format-full-termsheet-tab">
           <span class="eft-title">Full Termsheet</span>
           <span class="eft-sub">complete pricing &amp; legals</span>
         </button>
-        <button class="email-fmt-tab" type="button" role="tab" aria-selected="false" id="fmtTabHighlights" data-fmt="highlights">
+        <button class="email-fmt-tab" type="button" role="tab" aria-selected="false" id="fmtTabHighlights" data-fmt="highlights" data-testid="format-deal-highlights-tab">
           <span class="eft-title">Deal Highlights</span>
           <span class="eft-sub">key levels &amp; payoff only</span>
         </button>
@@ -46,25 +49,30 @@
       <div class="modal-body email-fmt-panel">
         <div class="form-grid">
 
-          <div class="email-recipients">
-            <div class="field"><label for="demoEmailTo">To · client</label>
-              <div class="email-to-chip"><span class="etc-dot" aria-hidden="true"></span><span class="etc-addr" id="demoEmailTo">—</span><span class="etc-lock" title="Fixed to this deal's client record, same as the real Trade Builder — the advisor can't retype it here, only Cc/Bcc are free text.">locked</span></div>
-            </div>
-            <div class="field"><label for="demoBcc">Bcc</label> <input id="demoBcc" type="text" placeholder="Add an email address" value="desk@foundryfx.com"></div>
-            <div class="field"><label for="demoCc">Cc</label> <input id="demoCc" type="text" placeholder="Add an email address"></div>
+          <div class="builder-section-heading span-12" data-testid="trade-builder-section-heading">
+            <div><span class="section-eyebrow">01 · Context first</span><h3>Trade builder inputs</h3></div>
+            <span class="section-note" data-testid="trade-builder-section-note">AI guidance updates as the deal and client profile change</span>
           </div>
 
-          <div class="field span-12"><label for="demoSubject">Subject</label> <input id="demoSubject" type="text" value="Your AUD/USD FX hedge — indicative pricing"></div>
+          <div class="email-recipients">
+            <div class="field"><label for="demoEmailTo">To · client</label>
+              <div class="email-to-chip" data-testid="review-recipient-client"><span class="etc-dot" aria-hidden="true"></span><span class="etc-addr" id="demoEmailTo" data-testid="review-recipient-value">—</span><span class="etc-lock" title="Fixed to this deal's client record, same as the real Trade Builder — the advisor can't retype it here, only Cc/Bcc are free text.">locked</span></div>
+            </div>
+            <div class="field"><label for="demoBcc">Bcc</label> <input id="demoBcc" type="text" placeholder="Add an email address" value="desk@foundryfx.com" data-testid="review-bcc-input"></div>
+            <div class="field"><label for="demoCc">Cc</label> <input id="demoCc" type="text" placeholder="Add an email address" data-testid="review-cc-input"></div>
+          </div>
+
+          <div class="field span-12"><label for="demoSubject">Subject</label> <input id="demoSubject" type="text" value="Your AUD/USD FX hedge — indicative pricing" data-testid="review-subject-input"></div>
 
           <div class="field span-12">
             <div class="field-label-row"><label for="demoIntro">Intro message</label>
-              <button class="btn btn-soft btn-xs" type="button" id="copyIntroBtn" title="Copy to clipboard">
+              <button class="btn btn-soft btn-xs" type="button" id="copyIntroBtn" title="Copy to clipboard" data-testid="review-copy-message-button">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                 Copy
               </button>
             </div>
-            <textarea id="demoIntro" rows="5" placeholder="The polished message lands here. Edit freely — nothing is sent until you hit Send Email."></textarea>
-            <p class="field-hint">Shown as a short note above the termsheet. Use the <strong>AI Sales Message</strong> button (bottom right) to draft it.</p>
+            <textarea id="demoIntro" rows="6" placeholder="The polished message lands here. Edit freely — nothing is sent until you hit Send Email." data-testid="review-intro-message-input"></textarea>
+            <p class="field-hint" data-testid="review-message-hint">Shown as a short note above the termsheet. Use the <strong>AI Sales Message</strong> button to draft it, then edit every word here.</p>
           </div>
 
           <div class="field span-12">
@@ -79,20 +87,46 @@
             </div>
           </div>
 
-          <details class="span-12 deal-context" id="dealContext" open>
-            <summary>Deal context sent to the AI <span class="dc-sub">(what the endpoint receives)</span></summary>
+          <div class="builder-top-grid span-12">
+            <section class="context-card client-profile" id="clientProfileSection" data-testid="client-profile-section">
+              <div class="card-heading"><div><span class="section-eyebrow">Client context</span><h3>Client profile</h3></div><span class="saved-indicator" id="profileSavedIndicator" data-testid="client-profile-saved-status">Saved locally</span></div>
+              <p class="card-copy" data-testid="client-profile-description">Give the AI a useful starting point. These details stay in this browser and are included with each draft.</p>
+              <div class="profile-grid">
+                <div class="field"><label for="dcClientName">Client name</label><input id="dcClientName" type="text" value="Ada Novik" data-testid="client-name-input"></div>
+                <div class="field"><label for="dcClientCompany">Company</label><input id="dcClientCompany" type="text" value="Novik Trading" data-testid="client-company-input"></div>
+                <div class="field"><label for="dcClientIndustry">Industry</label><input id="dcClientIndustry" type="text" value="Import &amp; distribution" placeholder="e.g. Manufacturing" data-testid="client-industry-input"></div>
+                <div class="field"><label for="dcRiskAppetite">Risk appetite</label><select id="dcRiskAppetite" data-testid="client-risk-appetite-select"><option>Conservative</option><option selected>Balanced</option><option>Growth-oriented</option><option>Not set</option></select></div>
+                <div class="field"><label for="dcHedgingHorizon">Hedging horizon</label><select id="dcHedgingHorizon" data-testid="client-hedging-horizon-select"><option>Up to 3 months</option><option selected>3–12 months</option><option>12–24 months</option><option>Not set</option></select></div>
+                <div class="field"><label for="dcFunctionalCurrency">Functional currency</label><input id="dcFunctionalCurrency" type="text" value="AUD" maxlength="12" class="mono-field" data-testid="client-functional-currency-input"></div>
+              </div>
+              <div class="field profile-notes"><label for="dcClientNotes">Client context &amp; notes</label><textarea id="dcClientNotes" rows="3" placeholder="Budget rate, monthly requirement, operating context, objectives…" data-testid="client-context-notes-input">Budget rate 0.7200 AUD/USD · needs USD 3m per month · hedges out 12 months.</textarea></div>
+            </section>
+
+            <aside class="context-card ai-guidance" id="aiGuidancePanel" data-testid="ai-guidance-panel">
+              <div class="card-heading"><div><span class="section-eyebrow">Live guidance</span><h3>AI guidance</h3></div><button class="btn btn-soft btn-xs" type="button" id="openSetupGuidance" data-testid="ai-guidance-setup-button">Tune setup</button></div>
+              <p class="card-copy" data-testid="ai-guidance-description">A transparent view of the context the assistant will lean on. No external market feed is used.</p>
+              <div class="why-stack">
+                <div class="why-card" data-testid="market-why-card"><span class="why-label">Mkt WHY</span><p id="guidanceMarketWhy" data-testid="market-why-value"></p></div>
+                <div class="why-card" data-testid="client-why-card"><span class="why-label">Client WHY</span><p id="guidanceClientWhy" data-testid="client-why-value"></p></div>
+                <div class="why-card" data-testid="product-why-card"><span class="why-label">Product WHY</span><p id="guidanceProductWhy" data-testid="product-why-value"></p></div>
+              </div>
+              <div class="guidance-grounding" data-testid="guidance-grounding-summary"><span class="why-label">Grounding snapshot</span><div class="grounding-pills"><span id="guidanceFamily" data-testid="guidance-product-family-pill">—</span><span id="guidanceProfile" data-testid="guidance-profile-pill">Profile ready</span></div></div>
+              <button class="btn btn-primary btn-wide" type="button" id="openAiFromGuidance" data-testid="ai-guidance-open-dialogue-button">Open AI dialogue <span aria-hidden="true">→</span></button>
+            </aside>
+          </div>
+
+          <details class="span-12 deal-context" id="dealContext" open data-testid="trade-builder-deal-inputs">
+            <summary>Deal inputs &amp; product grounding <span class="dc-sub">(the source context sent to the AI)</span></summary>
             <div class="dc-grid">
-              <div class="field"><label for="dcProduct">Product</label>
-                <select id="dcProduct"></select>
+              <div class="field product-selector-field"><label for="dcProduct">Product family &amp; structure</label>
+                <select id="dcProduct" data-testid="product-family-selector"></select>
                 <span class="field-hint" id="dcProductMeta"></span>
               </div>
-              <div class="field"><label for="dcPair">Pair</label> <input id="dcPair" type="text"></div>
-              <div class="field"><label for="dcDirection">Direction</label> <input id="dcDirection" type="text"></div>
-              <div class="field"><label for="dcNotional">Notional</label> <input id="dcNotional" type="text" class="mono-field"></div>
-              <div class="field"><label for="dcClientName">Client name</label> <input id="dcClientName" type="text" value="Ada Novik"></div>
-              <div class="field"><label for="dcClientCompany">Client company</label> <input id="dcClientCompany" type="text" value="Novik Trading"></div>
+              <div class="field"><label for="dcPair">Pair</label> <input id="dcPair" type="text" data-testid="deal-pair-input"></div>
+              <div class="field"><label for="dcDirection">Direction</label> <input id="dcDirection" type="text" data-testid="deal-direction-input"></div>
+              <div class="field"><label for="dcNotional">Notional</label> <input id="dcNotional" type="text" class="mono-field" data-testid="deal-notional-input"></div>
             </div>
-            <div class="dc-grid dc-grid-dynamic" id="dcDynamicFields"></div>
+            <div class="dc-grid dc-grid-dynamic" id="dcDynamicFields" data-testid="deal-dynamic-fields"></div>
             <div class="dc-outline" id="dcOutlineWrap" hidden>
               <h4>Product outline <span class="dc-sub">(background — the AI does not invent beyond this)</span></h4>
               <p id="dcOutline"></p>
@@ -113,8 +147,8 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-soft" type="button" id="cancelDemo">Cancel</button>
-        <button class="btn btn-primary" type="button" id="mockSend">
+        <button class="btn btn-soft" type="button" id="cancelDemo" data-testid="review-cancel-button">Cancel</button>
+        <button class="btn btn-primary" type="button" id="mockSend" data-testid="review-send-button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg>
           Send Email
         </button>
@@ -123,37 +157,46 @@
   </main>
 
   <div class="ai-fab-root">
-    <section class="ai-popup" id="aiPopup" role="dialog" aria-labelledby="aiSalesLabel" aria-hidden="true">
+    <section class="ai-popup" id="aiPopup" role="dialog" aria-labelledby="aiSalesLabel" aria-hidden="true" data-testid="ai-dialogue-box">
       <div class="ai-popup-head">
         <div>
           <span class="ai-popup-eyebrow">AI Sales Message</span>
           <h3 id="aiSalesLabel">Draft a client message</h3>
         </div>
-        <button class="btn btn-icon" type="button" id="aiPopupClose" title="Close" aria-label="Close">
+        <button class="btn btn-icon" type="button" id="aiPopupClose" title="Close" aria-label="Close" data-testid="ai-dialogue-close-button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
         </button>
       </div>
 
-      <span class="ai-sales-hint" id="aiHint">Simply describe your sales pitch in short for a polished message to your client. Product logic / Mkt logic / Client portfolio fit.</span>
+      <span class="ai-sales-hint" id="aiHint" data-testid="ai-dialogue-hint">Simply describe your sales pitch in short for a polished message to your client. Product logic / Mkt logic / Client portfolio fit.</span>
+
+      <div class="ai-profile-strip" data-testid="ai-active-preferences-strip"><span id="aiActiveStyle" data-testid="ai-active-writing-style">Executive</span><span id="aiActiveTone" data-testid="ai-active-tone">Consultative</span><span id="aiActivePositioning" data-testid="ai-active-positioning">Client outcome first</span></div>
 
       <div class="ai-note-row">
-        <textarea id="aiNote" rows="3" placeholder="e.g. Client wants protection around their budget rate. Highlight zero upfront premium and participation in an AUD recovery. Mention the knock-in exposure clearly."></textarea>
-        <button class="btn btn-icon mic-btn" id="micBtn" type="button" title="Dictate the note" aria-label="Dictate the note">
+        <textarea id="aiNote" rows="6" placeholder="e.g. Client wants protection around their budget rate. Highlight the key benefit and make the main trade-off clear." data-testid="ai-advisor-note-input"></textarea>
+        <button class="btn btn-icon mic-btn" id="micBtn" type="button" title="Dictate the note" aria-label="Dictate the note" data-testid="ai-dictation-button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>
         </button>
       </div>
 
+      <div class="tone-tools" data-testid="ai-style-shortcuts">
+        <span class="tools-label">Quick style</span>
+        <button type="button" class="style-pill is-active" data-style="Executive" data-testid="ai-style-executive-button">Executive</button>
+        <button type="button" class="style-pill" data-style="Concise" data-testid="ai-style-concise-button">Concise</button>
+        <button type="button" class="style-pill" data-style="Relationship-first" data-testid="ai-style-relationship-button">Relationship-first</button>
+      </div>
+
       <div class="ai-toggle-row">
-        <label class="ai-toggle"><input type="checkbox" id="toggleSubject"> Suggest a subject line</label>
-        <label class="ai-toggle"><input type="checkbox" id="toggleAlt"> Show alternative version</label>
+        <label class="ai-toggle"><input type="checkbox" id="toggleSubject" data-testid="ai-suggest-subject-toggle"> Suggest a subject line</label>
+        <label class="ai-toggle"><input type="checkbox" id="toggleAlt" data-testid="ai-show-alternative-toggle"> Show alternative version</label>
       </div>
 
       <div class="ai-actions">
-        <button class="btn btn-primary" id="draftBtn" type="button">
+        <button class="btn btn-primary" id="draftBtn" type="button" data-testid="ai-draft-button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
           <span id="draftBtnLabel">Draft with AI</span>
         </button>
-        <span class="ai-status" id="aiStatus" role="status"></span>
+        <span class="ai-status" id="aiStatus" role="status" data-testid="ai-draft-status"></span>
       </div>
 
       <div class="ai-history" id="aiHistory" hidden>
@@ -165,7 +208,7 @@
       <div class="ai-alt" id="aiAlt" hidden>
         <div class="ai-alt-head">
           <span class="ai-alt-label">Alternative angle <span class="ai-alt-flag" title="Interpretation of the spec's open &quot;Show alternative&quot; item — same facts, different tone/angle. Confirm intent with Hannah before treating this as final.">⚑ interpretation, confirm w/ Hannah</span></span>
-          <button class="btn btn-soft btn-xs" type="button" id="useAltBtn">Use this instead</button>
+        <button class="btn btn-soft btn-xs" type="button" id="useAltBtn" data-testid="ai-use-alternative-button">Use this instead</button>
         </div>
         <p class="ai-alt-text" id="aiAltText"></p>
       </div>
@@ -173,10 +216,29 @@
       <p class="ai-popup-foot">Populates the Intro message below. Nothing is ever sent from here — review it and hit Send Email yourself.</p>
     </section>
 
-    <button class="ai-fab" id="aiFab" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="aiPopup">
+    <button class="ai-fab" id="aiFab" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="aiPopup" data-testid="ai-sales-message-open-button">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 1.9 4.9L19 9.8l-4.9 1.9L12.2 16.6l-1.9-4.9L5.4 9.8l4.9-1.9L12 3Z"></path><path d="M19 15.5 19.8 18l2.5.8-2.5.8L19 22l-.8-2.4-2.5-.8 2.5-.8Z"></path></svg>
       <span>AI Sales Message</span>
     </button>
+  </div>
+
+  <div class="setup-drawer" id="setupDrawer" aria-hidden="true" data-testid="ai-setup-preferences-modal">
+    <div class="setup-scrim" id="setupScrim"></div>
+    <section class="setup-panel" role="dialog" aria-labelledby="setupTitle">
+      <div class="setup-header"><div><span class="section-eyebrow">Advisor workspace</span><h2 id="setupTitle" data-testid="ai-setup-title">AI setup</h2><p data-testid="ai-setup-description">Set the editorial guardrails that make the first draft feel like yours.</p></div><button class="btn btn-icon" type="button" id="closeSetup" aria-label="Close AI setup" data-testid="ai-setup-close-button">×</button></div>
+      <div class="setup-body">
+        <div class="setup-grid">
+          <div class="field"><label for="prefWritingStyle">Writing style</label><select id="prefWritingStyle" data-testid="ai-writing-style-select"><option>Concise</option><option selected>Executive</option><option>Technical</option><option>Relationship-first</option></select></div>
+          <div class="field"><label for="prefTone">Tone</label><select id="prefTone" data-testid="ai-tone-select"><option>Formal</option><option selected>Consultative</option><option>Direct</option><option>Warm</option></select></div>
+        </div>
+        <div class="field"><label for="prefPositioning">Sales positioning</label><textarea id="prefPositioning" rows="3" data-testid="ai-sales-positioning-input">Lead with the client's practical outcome, then make benefits and trade-offs explicit.</textarea><p class="field-hint">A direction for emphasis, not permission to add facts.</p></div>
+        <div class="setup-rule"><span>Master guidance</span><span>Editable reference</span></div>
+        <div class="field"><label for="prefMktWhy">Mkt WHY</label><textarea id="prefMktWhy" rows="3" data-testid="ai-master-market-why-input">Use only the market rationale supplied in the advisor note and deal context. Do not add external market commentary.</textarea></div>
+        <div class="field"><label for="prefClientWhy">Client WHY</label><textarea id="prefClientWhy" rows="3" data-testid="ai-master-client-why-input">Connect the stated client objective, risk appetite and hedging horizon to the proposed structure without inventing suitability claims.</textarea></div>
+        <div class="field"><label for="prefProductWhy">Product WHY</label><textarea id="prefProductWhy" rows="3" data-testid="ai-master-product-why-input">Explain the supplied product benefits and risks plainly. Preserve every rate, amount and condition exactly.</textarea></div>
+      </div>
+      <div class="setup-footer"><button class="btn btn-soft" type="button" id="resetSetup" data-testid="ai-setup-reset-button">Reset defaults</button><button class="btn btn-primary" type="button" id="saveSetup" data-testid="ai-setup-save-button">Save setup</button></div>
+    </section>
   </div>
 
   <script src="./app.js"></script>

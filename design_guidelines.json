@@ -1,0 +1,163 @@
+{
+  "project_title": "Foundry FX — AI Sales Message Upgrade",
+  "context_type": "Financial SaaS / FX Trade Builder & AI Sales Message Tool",
+  "persona": "E1 Creative Designer — Swiss High-Contrast Financial Precision with Craft Elegance",
+  "typography": {
+    "font_families": {
+      "serif_display": "Fraunces Variable, Fraunces, Georgia, serif",
+      "sans_body": "Inter Variable, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif",
+      "mono_code": "JetBrains Mono Variable, JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"
+    },
+    "hierarchy": {
+      "h1_title": "text-2xl sm:text-3xl font-serif font-semibold tracking-tight (24px to 30px)",
+      "h2_modal": "text-lg sm:text-xl font-serif font-semibold (18px to 22px)",
+      "h3_section": "text-base font-sans font-bold text-ink (15px to 16px)",
+      "h4_label": "text-xs font-sans font-bold uppercase tracking-wider text-muted (11px to 12px)",
+      "body_base": "text-sm font-sans text-ink leading-relaxed (13.5px to 14px)",
+      "mono_value": "font-mono text-xs sm:text-sm tracking-tight"
+    },
+    "anti_default_rules": [
+      "Do NOT use Inter for main section headers or hero titles — use Fraunces serif display for elegance.",
+      "Always use JetBrains Mono for monetary values, currency pairs, execution rates, and deal timestamps."
+    ]
+  },
+  "colors": {
+    "archetype": "OLD MONEY TECH & SWISS HIGH-CONTRAST",
+    "palette": {
+      "bg_dark_a": "#1a235a",
+      "bg_dark_b": "#070b24",
+      "panel_surface": "#ffffff",
+      "panel_surface_soft": "#f8fafc",
+      "brand_primary": "#4b5694",
+      "brand_dark": "#1a235a",
+      "brand_soft": "#eef1f9",
+      "brand_accent": "#3b82f6",
+      "ink_primary": "#111844",
+      "ink_muted": "#545f83",
+      "ink_muted_invert": "#aebdd4",
+      "line_border": "#e6ecf4",
+      "line_border_dark": "#cbd5e1",
+      "status_danger": "#b3261e",
+      "status_danger_soft": "#fef2f2",
+      "amber_bg": "#fff4d6",
+      "amber_line": "#e7c568",
+      "amber_text": "#8a6d1a",
+      "success_bg": "#f0fdf4",
+      "success_line": "#86efac",
+      "success_text": "#166534"
+    },
+    "rules": [
+      "No transparent overlays without semi-solid backing or blur.",
+      "Ensure minimum 4.5:1 WCAG contrast ratio for normal text and 3:1 for large labels/buttons.",
+      "Always explicitly declare text color on hover states."
+    ]
+  },
+  "visual_enhancers": {
+    "borders": "1px solid var(--line) with smooth radius",
+    "border_radius": {
+      "sm": "6px",
+      "default": "10px",
+      "lg": "14px",
+      "pill": "999px"
+    },
+    "shadows": {
+      "card": "0 4px 20px -2px rgba(17, 24, 68, 0.08)",
+      "modal": "0 24px 60px -24px rgba(17, 24, 68, 0.55), 0 24px 60px rgba(7, 11, 36, 0.35)",
+      "drawer": "-10px 0 30px rgba(7, 11, 36, 0.25)"
+    },
+    "glassmorphism": "backdrop-filter: blur(12px); background-color: rgba(255, 255, 255, 0.92);"
+  },
+  "grids_and_layouts": {
+    "main_container": "max-w-[1280px] mx-auto px-4 py-6",
+    "trade_builder_grid": "grid grid-cols-1 lg:grid-cols-12 gap-6",
+    "deal_inputs_panel": "lg:col-span-7 xl:col-span-8 flex flex-col gap-5",
+    "ai_guidance_sidebar": "lg:col-span-5 xl:col-span-4 bg-panel border border-line rounded-xl p-5 flex flex-col gap-4",
+    "modal_dialog": "width: min(960px, 95vw); max-height: 90vh;",
+    "ai_popup_expanded": "width: min(580px, calc(100vw - 32px)); min-height: 480px;"
+  },
+  "key_features_and_components": {
+    "trade_builder_deal_inputs": {
+      "description": "Primary deal configuration form containing product family selector, currency pair, direction, notional, dynamic schedule fields, and inline AI guidance context.",
+      "data_testid": "trade-builder-deal-inputs"
+    },
+    "product_family_selector": {
+      "description": "Product selector grouped by Product Families (e.g., Forwards & Swaps, Vanilla Options, Participating Products, Barrier & Leveraged Structures, Digital & Exotic Options) rather than flat product selection.",
+      "data_testid": "product-family-selector"
+    },
+    "ai_guidance_panel": {
+      "description": "Integrated guidance sidebar/drawer situated alongside deal inputs. Displays live calculated Mkt WHY, Client WHY, Product WHY, outline, grounding benefits, and key selling points direct in context.",
+      "data_testid": "ai-guidance-panel"
+    },
+    "client_profile_section": {
+      "description": "Client Profile management section with predefined fields (Client Name, Company, Industry, Risk Appetite, Hedging Horizon, Functional Currency) and a rich free-form field ('Client Context & Notes') that AI references during message drafting.",
+      "data_testid": "client-profile-section"
+    },
+    "ai_setup_preferences_modal": {
+      "description": "Account/User AI setup preferences drawer/tab containing Writing Style (e.g. Concise, Executive, Technical, Relationship-first), Tone (e.g. Formal, Consultative, Direct), Sales Positioning Strategy, and editable Master Guidance templates for Market WHY, Client WHY, and Product WHY.",
+      "data_testid": "ai-setup-preferences-modal"
+    },
+    "expanded_ai_dialogue_box": {
+      "description": "Enlarged, rich AI dialogue box (floating or embedded drawer) with generous text area (6+ rows), microphone dictation, tone/style shortcut selectors, draft history carousel, alternative angle toggle, and direct sync to Review & Send.",
+      "data_testid": "ai-dialogue-box"
+    },
+    "review_and_send_workflow": {
+      "description": "Modal workflow carrying the generated AI sales message straight into the 'Intro Message' field, keeping full manual inline editing capabilities, format tab toggling (Full Termsheet vs Deal Highlights), recipient controls, and live trade string verification.",
+      "data_testid": "review-and-send-modal"
+    }
+  },
+  "backend_integration_spec": {
+    "schema_updates": {
+      "SalesMessageRequest": {
+        "fields": [
+          "product (str)",
+          "product_family (str | None)",
+          "deal_terms (dict[str, str])",
+          "product_outline (list[str])",
+          "product_benefits (list[str])",
+          "product_risks (list[str])",
+          "advisor_note (str)",
+          "client_name (str | None)",
+          "client_company (str | None)",
+          "client_industry (str | None)",
+          "client_risk_appetite (str | None)",
+          "client_hedging_horizon (str | None)",
+          "client_notes (str | None)",
+          "writing_style (str | None)",
+          "tone (str | None)",
+          "sales_positioning (str | None)",
+          "master_mkt_why (str | None)",
+          "master_client_why (str | None)",
+          "master_product_why (str | None)",
+          "suggest_subject (bool)",
+          "show_alternative (bool)"
+        ]
+      }
+    },
+    "prompt_enhancements": "In backend/app/ai.py, append the new client profile metadata, writing style, tone, positioning strategy, and editable master guidance (Mkt WHY, Client WHY, Product WHY) into the system prompt and user message context block."
+  },
+  "motion_and_interactions": {
+    "hover_transitions": "transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease",
+    "dictation_animation": "@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(179,38,30,.18); } }",
+    "modal_entrance": "transform: scale(0.98); opacity: 0 -> transform: scale(1); opacity: 1 (0.2s cubic-bezier(0.16, 1, 0.3, 1))"
+  },
+  "accessibility": {
+    "focus_rings": "focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none",
+    "testing_attributes": "All interactive buttons, input fields, selects, textareas, tabs, and status indicators MUST include explicit data-testid attributes."
+  },
+  "instructions_to_main_agent": [
+    "1. Update backend/app/schemas.py to support new request fields: client_industry, client_risk_appetite, client_hedging_horizon, client_notes, writing_style, tone, sales_positioning, master_mkt_why, master_client_why, master_product_why, product_family.",
+    "2. Update backend/app/ai.py build_user_message() and SYSTEM_PROMPT to incorporate writing style, tone, sales positioning, master guidance (Mkt WHY, Client WHY, Product WHY), and detailed client profile free-form notes.",
+    "3. Update demo/data/product-schemas.sample.js to group all products into distinct product families (e.g., 'Forwards & Swaps', 'Vanilla Options', 'Participating Products', 'Leveraged & Knock-Out Structures').",
+    "4. Refactor demo/index.html to include: (a) Product Family Grouped Select dropdown, (b) AI Guidance Panel integrated into the Trade Builder deal input layout, (c) Client Profile card with predefined fields + free-form context textarea, (d) AI Setup Preferences drawer/modal for writing style, tone, sales positioning, and editable master guidance, (e) Enlarged AI dialogue box with expanded height, tone pills, and richControls, (f) Seamless sync into Review & Send modal with editable intro message.",
+    "5. Update demo/app.js to persist AI Setup Preferences and Client Profile in localStorage, populate product families dynamically, feed all preferences and client notes into buildPayload(), and support seamless sync between Trade Builder, AI Guidance, AI Setup, and Review & Send.",
+    "6. Enhance demo/styles.css with high-density financial layout styles, larger AI popup dimensions, responsive grid setups, tab styles, and crisp border/shadow definitions.",
+    "7. Ensure all interactive controls have data-testid attributes for E2E testing."
+  ],
+  "UNIVERSAL GUIDELINES FOR MAIN AGENT": [
+    "DO NOT use generic centered layout — maintain structured left-aligned financial typography.",
+    "Ensure every input field, select, button, textarea, tab, and card has explicit data-testid attributes.",
+    "Preserve all existing functionality while polishing the design in place.",
+    "Do not add third-party integrations; maintain local/demo persistence.",
+    "No transparent dropdown or header backgrounds."
+  ]
+}
