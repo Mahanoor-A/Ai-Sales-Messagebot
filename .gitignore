@@ -13,3 +13,9 @@ dist/
 # only as a local reference for extracting content — this is a standalone
 # app per spec and must not ship or share that codebase.
 foundryfx.zip
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
