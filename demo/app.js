@@ -62,12 +62,13 @@
   function fieldInputType(type) { return type === "date" ? "date" : "text"; }
 
   const deal = { product: "", productFamily: "", pair: "", direction: "Buy", notional: "", notionalCcy: "", fields: {} };
+  let activeFormat = "full";
   const els = {
     product: $("dcProduct"), productMeta: $("dcProductMeta"), pair: $("dcPair"), direction: $("dcDirection"), notional: $("dcNotional"), dynamicFields: $("dcDynamicFields"),
     outlineWrap: $("dcOutlineWrap"), outline: $("dcOutline"), benefits: $("dcBenefits"), risks: $("dcRisks"), tradeString: $("demoTradeString"), emailTo: $("demoEmailTo"),
     note: $("aiNote"), mic: $("micBtn"), draft: $("draftBtn"), draftLabel: $("draftBtnLabel"), status: $("aiStatus"), intro: $("demoIntro"), subject: $("demoSubject"), copyIntro: $("copyIntroBtn"),
     toggleSubject: $("toggleSubject"), toggleAlt: $("toggleAlt"), history: $("aiHistory"), historyChips: $("aiHistoryChips"), historyCount: $("aiHistoryCount"), alt: $("aiAlt"), altText: $("aiAltText"), useAlt: $("useAltBtn"),
-    fab: $("aiFab"), popup: $("aiPopup"), popupClose: $("aiPopupClose"), fmtTabFull: $("fmtTabFull"), fmtTabHighlights: $("fmtTabHighlights"), fmtChip: $("demoFmtChip"), fmtPlaceholder: $("demoFmtPlaceholder"),
+    fab: $("aiFab"), guidanceOpen: $("openAiFromGuidance"), popup: $("aiPopup"), popupClose: $("aiPopupClose"), fmtTabFull: $("fmtTabFull"), fmtTabHighlights: $("fmtTabHighlights"), fmtChip: $("demoFmtChip"), fmtPlaceholder: $("demoFmtPlaceholder"),
     guidanceMarketWhy: $("guidanceMarketWhy"), guidanceClientWhy: $("guidanceClientWhy"), guidanceProductWhy: $("guidanceProductWhy"), guidanceFamily: $("guidanceFamily"), guidanceProfile: $("guidanceProfile"),
     activeStyle: $("aiActiveStyle"), activeTone: $("aiActiveTone"), activePositioning: $("aiActivePositioning"), hint: $("aiHint"), profileSaved: $("profileSavedIndicator"),
   };
@@ -112,8 +113,8 @@
   }
   function renderDynamicFields() {
     const schema = getSchema(deal.product); deal.fields = {};
-    els.dynamicFields.innerHTML = dynamicFieldsFor(schema).map((field) => { const value = formatDefault(field, schema?.sampleDefaults?.[field.key]); deal.fields[field.key] = value; const cls = ["currency", "rate", "integer"].includes(field.type) ? " mono-field" : ""; return `<div class="field"><label for="dcf-${escapeHtml(field.key)}">${escapeHtml(field.label)}</label><input id="dcf-${escapeHtml(field.key)}" data-field-key="${escapeHtml(field.key)}" type="${fieldInputType(field.type)}" class="${cls}" value="${escapeHtml(value)}" data-testid="deal-${escapeHtml(field.key)}-input"></div>`; }).join("");
-    els.dynamicFields.querySelectorAll("[data-field-key]").forEach((input) => input.addEventListener("input", () => { deal.fields[input.dataset.fieldKey] = input.value.trim(); renderGuidance(); }));
+    els.dynamicFields.innerHTML = dynamicFieldsFor(schema).map((field) => { const value = formatDefault(field, schema?.sampleDefaults?.[field.key]); deal.fields[field.key] = value; const cls = ["currency", "rate", "integer"].includes(field.type) ? " mono-field" : ""; return `<div class="field"><label for="dcf-${escapeHtml(field.key)}">${escapeHtml(field.label)}</label><input id="dcf-${escapeHtml(field.key)}" data-field-key="${escapeHtml(field.key)}" type="${fieldInputType(field.type)}" class="${cls}" value="${escapeHtml(value)}" data-testid="deal-dynamic-${escapeHtml(field.key)}-input"></div>`; }).join("");
+    els.dynamicFields.querySelectorAll("[data-field-key]").forEach((input) => input.addEventListener("input", () => { deal.fields[input.dataset.fieldKey] = input.value.trim(); renderGuidance(); updateTradePreview(); }));
   }
   function syncDealFromInputs() { deal.pair = els.pair.value.trim(); deal.direction = els.direction.value.trim(); deal.notional = els.notional.value.trim(); els.dynamicFields.querySelectorAll("[data-field-key]").forEach((input) => { deal.fields[input.dataset.fieldKey] = input.value.trim(); }); renderGuidance(); updateTradePreview(); }
   function renderGrounding() {
@@ -131,7 +132,40 @@
     els.guidanceFamily.textContent = deal.productFamily || "Choose a family"; els.guidanceProfile.textContent = profile.clientName && profile.clientCompany ? "Profile ready" : "Profile needs detail";
     if (schema) els.productMeta.textContent = `${schema.classification || "Structure"} · ${deal.productFamily} · ${dynamicFieldsFor(schema).length} key terms`;
   }
-  function updateTradePreview() { els.tradeString.textContent = `${deal.pair || "—"} · ${deal.product || "Choose a structure"}`; }
+  function previewTerms() {
+    const schema = getSchema(deal.product);
+    const terms = [
+      { label: "Direction", value: deal.direction },
+      { label: "Notional", value: deal.notional },
+      ...dynamicFieldsFor(schema).map((field) => ({ label: field.label, value: deal.fields[field.key] })),
+    ];
+    return terms.filter((term) => term.value);
+  }
+  function renderTradePreview() {
+    const copy = termsheetCopyForProduct(deal.product, deal.pair, deal.notionalCcy);
+    const terms = previewTerms();
+    els.tradeString.textContent = `${deal.pair || "—"} · ${deal.product || "Choose a structure"}`;
+
+    if (activeFormat === "highlights") {
+      const metrics = terms.slice(0, 6).map((term, index) => `<div class="preview-metric" data-testid="deal-highlight-term-${index + 1}"><span>${escapeHtml(term.label)}</span><strong class="mono-field">${escapeHtml(term.value)}</strong></div>`).join("");
+      const benefit = copy.benefits[0] || "No product benefit has been supplied for this structure.";
+      const risk = copy.risks[0] || "No product risk has been supplied for this structure.";
+      els.fmtPlaceholder.innerHTML = `<section class="deal-highlights-render" data-testid="deal-highlights-render">
+        <div class="preview-hero"><div><span class="preview-kicker">${escapeHtml(deal.productFamily || "FX structure")}</span><h4 data-testid="deal-highlights-product">${escapeHtml(deal.product || "Choose a structure")}</h4></div><div class="preview-pair mono-field" data-testid="deal-highlights-pair">${escapeHtml(deal.pair || "—")}</div></div>
+        <div class="preview-metrics" data-testid="deal-highlights-key-terms">${metrics || '<p class="preview-empty">Add deal terms to build the highlights.</p>'}</div>
+        <div class="payoff-snapshot" data-testid="deal-highlights-payoff-snapshot"><div class="payoff-item benefit"><span>Primary benefit</span><p data-testid="deal-highlights-benefit">${escapeHtml(benefit)}</p></div><div class="payoff-axis" aria-hidden="true"><i></i><b></b><i></i></div><div class="payoff-item risk"><span>Key trade-off</span><p data-testid="deal-highlights-risk">${escapeHtml(risk)}</p></div></div>
+      </section>`;
+      return;
+    }
+
+    const termRows = terms.slice(0, 8).map((term, index) => `<div class="termsheet-term" data-testid="full-termsheet-term-${index + 1}"><span>${escapeHtml(term.label)}</span><strong class="mono-field">${escapeHtml(term.value)}</strong></div>`).join("");
+    els.fmtPlaceholder.innerHTML = `<section class="termsheet-render" data-testid="full-termsheet-render">
+      <div class="preview-hero"><div><span class="preview-kicker">Full product terms</span><h4>${escapeHtml(deal.product || "Choose a structure")}</h4></div><div class="preview-pair mono-field">${escapeHtml(deal.pair || "—")}</div></div>
+      <div class="termsheet-grid">${termRows || '<p class="preview-empty">Add deal terms to build the termsheet.</p>'}</div>
+      <div class="termsheet-summary"><div><span>Structure overview</span><p data-testid="full-termsheet-outline">${escapeHtml(copy.outline[0] || "Product outline will appear here.")}</p></div><div class="summary-benefit"><span>Benefit</span><p>${escapeHtml(copy.benefits[0] || "Not supplied")}</p></div><div class="summary-risk"><span>Risk</span><p>${escapeHtml(copy.risks[0] || "Not supplied")}</p></div></div>
+    </section>`;
+  }
+  function updateTradePreview() { renderTradePreview(); }
   function onProductChange() {
     const schema = getSchema(els.product.value); deal.product = els.product.value; deal.productFamily = familyName(schema); deal.notionalCcy = schema?.notionalCcy || "";
     els.pair.value = schema?.pair || ""; els.direction.value = deal.direction || "Buy"; const amount = schema?.sampleDefaults?.notional; els.notional.value = amount ? `${deal.notionalCcy || ""} ${Number(amount).toLocaleString("en-US")}`.trim() : (deal.notionalCcy || "");
@@ -144,22 +178,17 @@
     els.history.hidden = false; els.historyChips.innerHTML = history.items.map((_, index) => `<button type="button" class="ai-chip${index === history.index ? " is-current" : ""}" data-i="${index}" data-testid="ai-history-draft-${index + 1}">Draft ${index + 1}</button>`).join(""); els.historyCount.textContent = `${history.index + 1} of ${history.count}`;
     els.historyChips.querySelectorAll("[data-i]").forEach((button) => button.addEventListener("click", () => { const text = history.go(Number(button.dataset.i)); if (text != null) { els.intro.value = text; renderHistory(); setStatus("Restored an earlier draft.", "ok"); } }));
   }
-  function openPopup() { els.popup.classList.add("is-open"); els.popup.setAttribute("aria-hidden", "false"); els.fab.classList.add("is-open"); els.fab.setAttribute("aria-expanded", "true"); els.note.focus(); }
-  function closePopup() { els.popup.classList.remove("is-open"); els.popup.setAttribute("aria-hidden", "true"); els.fab.classList.remove("is-open"); els.fab.setAttribute("aria-expanded", "false"); }
+  function openPopup() { els.popup.classList.add("is-open"); els.popup.setAttribute("aria-hidden", "false"); els.fab.classList.add("is-open"); els.fab.setAttribute("aria-expanded", "true"); els.guidanceOpen.setAttribute("aria-expanded", "true"); const focusNote = () => { if (!els.popup.classList.contains("is-open")) return; els.guidanceOpen.blur(); els.fab.blur(); els.note.focus(); }; window.setTimeout(focusNote, 0); window.setTimeout(focusNote, 250); }
+  function closePopup() { els.popup.classList.remove("is-open"); els.popup.setAttribute("aria-hidden", "true"); els.fab.classList.remove("is-open"); els.fab.setAttribute("aria-expanded", "false"); els.guidanceOpen.setAttribute("aria-expanded", "false"); }
   function openSetup() { $("setupDrawer").classList.add("is-open"); $("setupDrawer").setAttribute("aria-hidden", "false"); syncPrefInputs(); prefEls.writingStyle.focus(); }
   function closeSetup() { $("setupDrawer").classList.remove("is-open"); $("setupDrawer").setAttribute("aria-hidden", "true"); }
-  function setFormat(format) { const full = format === "full"; [els.fmtTabFull, els.fmtTabHighlights].forEach((tab, index) => { const active = index === (full ? 0 : 1); tab.classList.toggle("is-active", active); tab.setAttribute("aria-selected", String(active)); }); els.fmtChip.textContent = full ? "FULL TERMSHEET" : "DEAL HIGHLIGHTS"; els.fmtChip.classList.toggle("is-full", full); els.fmtChip.classList.toggle("is-highlights", !full); els.fmtPlaceholder.textContent = full ? "termsheet / chart preview renders here in the builder" : "key levels & payoff chart only — renders here in the builder"; setStatus(full ? "Full termsheet format selected." : "Deal highlights format selected.", ""); }
+  function setFormat(format) { activeFormat = format; const full = format === "full"; [els.fmtTabFull, els.fmtTabHighlights].forEach((tab, index) => { const active = index === (full ? 0 : 1); tab.classList.toggle("is-active", active); tab.setAttribute("aria-selected", String(active)); }); els.fmtChip.textContent = full ? "FULL TERMSHEET" : "DEAL HIGHLIGHTS"; els.fmtChip.classList.toggle("is-full", full); els.fmtChip.classList.toggle("is-highlights", !full); renderTradePreview(); setStatus(full ? "Full termsheet rendered from the current deal." : "Deal highlights rendered from the current key terms and payoff grounding.", "ok"); }
 
   Object.values(profileEls).forEach((input) => input?.addEventListener("input", readProfileInputs));
   [els.pair, els.direction, els.notional].forEach((input) => input?.addEventListener("input", syncDealFromInputs));
-  els.product.addEventListener("change", onProductChange); els.fab.addEventListener("click", () => els.popup.classList.contains("is-open") ? closePopup() : openPopup()); els.popupClose.addEventListener("click", closePopup);
+  els.product.addEventListener("change", onProductChange); [els.fab, els.guidanceOpen].forEach((button) => button.addEventListener("mousedown", (event) => event.preventDefault())); els.fab.addEventListener("click", () => els.popup.classList.contains("is-open") ? closePopup() : openPopup()); els.popupClose.addEventListener("click", closePopup);
   [$("openSetupTop"), $("openSetupGuidance")].forEach((button) => button?.addEventListener("click", openSetup));
-  document.addEventListener("click", (event) => {
-    if (!event.target.closest?.("#openAiFromGuidance")) return;
-    event.preventDefault();
-    event.stopPropagation();
-    openPopup();
-  }, true);
+  els.guidanceOpen.addEventListener("click", (event) => { event.preventDefault(); openPopup(); });
   $("closeSetup").addEventListener("click", closeSetup); $("setupScrim").addEventListener("click", closeSetup);
   $("saveSetup").addEventListener("click", () => { readPrefInputs(); closeSetup(); setStatus("AI setup saved. New drafts will use this direction.", "ok"); });
   $("resetSetup").addEventListener("click", () => { prefs = { ...DEFAULT_PREFS }; syncPrefInputs(); readPrefInputs(); setStatus("AI setup reset to the workspace defaults.", ""); });

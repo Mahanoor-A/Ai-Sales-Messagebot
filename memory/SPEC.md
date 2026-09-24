@@ -15,7 +15,8 @@ Standalone FastAPI service and static Trade Builder demo for creating grounded, 
 1. Configure product family and deal inputs.
 2. Complete the client profile and optionally edit AI setup guidance.
 3. Open the embedded AI Sales Message dialogue, write a note, and draft a message.
-4. Review the generated message in Review & Send, edit it freely, and use the demo send action.
+4. Switch between a dynamically rendered Full Termsheet and Deal Highlights preview; both reflect the current product and deal terms.
+5. Review the generated message in Review & Send, edit it freely, and use the demo send action.
 
 ## Auth and roles
 

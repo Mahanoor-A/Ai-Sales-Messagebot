@@ -1,0 +1,60 @@
+{
+  "iteration": 4,
+  "mode": "retest",
+  "summary": "Retest of iteration_3. Backend suite: 23/23 passed (no change). Browser checks: 5/5 passed - the previously reported AI dialogue focus-management bug (unresolved since iteration_2) is now fixed; #aiNote receives and retains focus after the opening transition.",
+  "passed": 5,
+  "failed": 0,
+  "retest_needed": false,
+  "checks": [
+    {
+      "criterion": "Deal Highlights is a real rendered preview rather than placeholder text",
+      "name": "deal-highlights-renders-real-preview",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: deal-highlights-render visible with product, pair, >=3 key terms, benefit, and risk all populated."
+    },
+    {
+      "criterion": "Deal Highlights stays synchronized with Deal Inputs",
+      "name": "deal-highlights-sync-with-inputs",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: notional edit and dynamic field edit reflected immediately in highlights; product switch to Accumulator updated product/benefit text."
+    },
+    {
+      "criterion": "Full Termsheet and Deal Highlights tabs both work",
+      "name": "termsheet-and-highlights-tabs-switch",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: tab switch toggles chip text and rendered panel correctly both directions."
+    },
+    {
+      "criterion": "Open AI dialogue works from the embedded AI guidance card",
+      "name": "open-ai-dialogue-from-guidance-card",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run PASSED (previously failed in iteration_2/3): dialogue opens visibly, aria-expanded=true, focus now correctly lands and remains on #aiNote after the opening transition, and close button restores closed state. Screenshots: dialogue-open.png, dialogue-closed.png. Focus bug appears fixed since last retest."
+    },
+    {
+      "criterion": "The fixed workflow has no duplicate interactive test identifiers or browser errors",
+      "name": "workflow-unique-testids-no-console-errors",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: no duplicate testids across DOM, zero console errors, zero >=400 network responses during full tab-switch + AI dialogue open/close workflow."
+    },
+    {
+      "criterion": "Backend API layer supporting the AI sales message / deal endpoints",
+      "name": "test_tscheck_ai_sales_message_endpoint.py + test_api.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "pytest -q: 23 passed, 0 failed, 0.78s. No regressions from iteration_3."
+    }
+  ],
+  "bugs": [],
+  "action_items": [],
+  "notes": [
+    "The AI dialogue focus-management bug reported in iteration_2 and re-confirmed in iteration_3 (els.note.focus() being overridden by default post-click button focus) is no longer reproducible. #aiNote is now focused and retains focus after the opening transition.",
+    "All other criteria remain solid on re-run: highlights render/sync, tab switching, and no-duplicate-testid/no-console-error workflow.",
+    "Backend suite (23 tests) re-run clean, no regressions.",
+    "No new criteria were added to the acceptance_matrix in this briefing versus iteration_3; no new artifacts were required."
+  ]
+}

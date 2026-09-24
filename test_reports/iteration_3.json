@@ -1,0 +1,65 @@
+{
+  "iteration": 3,
+  "mode": "retest",
+  "summary": "Retest of iteration_2. Backend suite: 23/23 passed (no change). Browser checks: 4 passed, 1 failed (same pre-existing focus-management bug in AI dialogue open flow, unresolved since iteration_2 - not fixed by main agent yet).",
+  "passed": 4,
+  "failed": 1,
+  "retest_needed": true,
+  "checks": [
+    {
+      "criterion": "Deal Highlights is a real rendered preview rather than placeholder text",
+      "name": "deal-highlights-renders-real-preview",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: deal-highlights-render visible with product, pair, >=3 key terms, benefit, and risk all populated."
+    },
+    {
+      "criterion": "Deal Highlights stays synchronized with Deal Inputs",
+      "name": "deal-highlights-sync-with-inputs",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: notional edit and dynamic field edit reflected immediately in highlights; product switch to Accumulator updated product/benefit text."
+    },
+    {
+      "criterion": "Full Termsheet and Deal Highlights tabs both work",
+      "name": "termsheet-and-highlights-tabs-switch",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: tab switch toggles chip text and rendered panel correctly both directions."
+    },
+    {
+      "criterion": "Open AI dialogue works from the embedded AI guidance card",
+      "name": "open-ai-dialogue-from-guidance-card",
+      "lane": "browser",
+      "status": "failed",
+      "evidence": "Re-run failed identically to iteration_2: dialogue opens visibly (aria-hidden/aria-expanded correct) but expect(page.locator('#aiNote')).toBeFocused() times out after 5000ms - activeElement remains the trigger button, not #aiNote (ai-advisor-note-input). Screenshot: open-ai-dialogue-from-guidance-card-failure.png. Same root cause reported previously (els.note.focus() overridden by default post-click button focus) - not yet fixed."
+    },
+    {
+      "criterion": "The fixed workflow has no duplicate interactive test identifiers or browser errors",
+      "name": "workflow-unique-testids-no-console-errors",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Re-run passed: no duplicate testids across DOM, zero console errors, zero >=400 network responses during full tab-switch + AI dialogue open/close workflow."
+    }
+  ],
+  "bugs": [
+    {
+      "criterion": "Open AI dialogue works from the embedded AI guidance card",
+      "severity": "medium",
+      "description": "Unresolved from iteration_2: openPopup() in demo/app.js calls els.note.focus() synchronously inside the click handler, but the browser's default focus-the-clicked-button behavior (which fires after the handler) overrides it, so focus lands back on the 'Open AI dialogue' trigger button instead of the advisor note textarea (#aiNote).",
+      "evidence": "run_browser_script 'open-ai-dialogue-from-guidance-card' (re-run): expect(page.locator('#aiNote')).toBeFocused() failed, 'Received: inactive', after 5000ms. Dialogue visibly open and correctly rendered per screenshot - confirms this is purely a focus-management defect, not a render defect."
+    }
+  ],
+  "action_items": [
+    {
+      "item": "Still open from iteration_2: defer els.note.focus() to the next tick (requestAnimationFrame or setTimeout 0) inside openPopup() in demo/app.js so it isn't overridden by the browser's default button-focus-after-click behavior.",
+      "severity": "medium",
+      "related_check": "open-ai-dialogue-from-guidance-card"
+    }
+  ],
+  "notes": [
+    "No code changes were detected for the AI dialogue focus bug between iteration_2 and this retest - identical failure signature.",
+    "All other criteria remain solid on re-run: highlights render/sync, tab switching, and no-duplicate-testid/no-console-error workflow.",
+    "Backend suite (23 tests) re-run clean, no regressions."
+  ]
+}

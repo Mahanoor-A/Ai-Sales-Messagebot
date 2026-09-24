@@ -1,0 +1,66 @@
+{
+  "iteration": 2,
+  "mode": "generate",
+  "summary": "6 browser check artifacts covering the 5 acceptance criteria (2 checks for the highlights-render criterion split into render + sync). Backend suite: 23 passed (pre-existing, no new backend-bearing criteria this round). Browser checks: 5 passed, 1 failed (advisor-note focus not set when the AI dialogue opens).",
+  "passed": 5,
+  "failed": 1,
+  "retest_needed": true,
+  "checks": [
+    {
+      "criterion": "Deal Highlights is a real rendered preview rather than placeholder text",
+      "name": "deal-highlights-renders-real-preview",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "deal-highlights-render visible; deal-highlights-product ('Knock Out Conv. (LEV)') and deal-highlights-pair non-empty; deal-highlights-key-terms contains 6 .preview-metric nodes (>=3 required); deal-highlights-benefit and deal-highlights-risk both non-empty text."
+    },
+    {
+      "criterion": "Deal Highlights stays synchronized with Deal Inputs",
+      "name": "deal-highlights-sync-with-inputs",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Editing deal-notional-input to 'USD 9,876,543' immediately reflected in deal-highlights-key-terms; editing dynamic field deal-dynamic-protection-input (non-date) to 'tscheck-dyn-42' also reflected immediately; switching product to Accumulator changed deal-highlights-product text and produced a non-empty deal-highlights-benefit for the new product."
+    },
+    {
+      "criterion": "Full Termsheet and Deal Highlights tabs both work",
+      "name": "termsheet-and-highlights-tabs-switch",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Default tab renders full-termsheet-render with chip text 'FULL TERMSHEET' and full-termsheet-outline populated; clicking fmtTabHighlights swaps to deal-highlights-render with chip 'DEAL HIGHLIGHTS' and visible benefit; clicking fmtTabFull switches back to full-termsheet-render with chip reverted to 'FULL TERMSHEET'."
+    },
+    {
+      "criterion": "Open AI dialogue works from the embedded AI guidance card",
+      "name": "open-ai-dialogue-from-guidance-card",
+      "lane": "browser",
+      "status": "failed",
+      "evidence": "ai-guidance-open-dialogue-button click correctly opens ai-dialogue-box (aria-hidden true->false, visible) and sets aria-expanded=true on the button; BUT document.activeElement remains 'openAiFromGuidance' (the trigger button) instead of moving to #aiNote (ai-advisor-note-input) — expect(note).toBeFocused() timed out after 5000ms. Close button behavior (aria-hidden reset, aria-expanded=false) was verified separately in the pre-existing ai-dialogue-controls-and-close check and passed."
+    },
+    {
+      "criterion": "The fixed workflow has no duplicate interactive test identifiers or browser errors",
+      "name": "workflow-unique-testids-no-console-errors",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "deal-notional-input count === 1; full-page data-testid duplicate scan returned []; ran the full tab-switch + open/close AI dialogue workflow with zero console errors and zero network responses >=400 captured."
+    }
+  ],
+  "bugs": [
+    {
+      "criterion": "Open AI dialogue works from the embedded AI guidance card",
+      "severity": "medium",
+      "description": "openPopup() in demo/app.js calls els.note.focus() synchronously inside the button's click handler, but the browser's default post-click focus-the-clicked-button behavior runs after the handler and overrides it, so focus lands back on the 'Open AI dialogue' button instead of the advisor note textarea (#aiNote). Confirmed via page.evaluate(() => document.activeElement.id) returning 'openAiFromGuidance' after the click, not 'aiNote'.",
+      "evidence": "run_browser_script 'open-ai-dialogue-from-guidance-card': expect(page.locator('#aiNote')).toBeFocused() failed with 'Received: inactive' after 5000ms; screenshot confirms dialogue is visibly open (fully rendered, correct content) at the moment of failure, so this is a focus-management bug, not a render bug. Cross-checked with a manual page.evaluate probe returning activeElement.id === 'openAiFromGuidance'."
+    }
+  ],
+  "action_items": [
+    {
+      "item": "Fix advisor-note auto-focus on AI dialogue open: defer els.note.focus() to the next tick (e.g. requestAnimationFrame or a 0ms setTimeout) inside openPopup() in demo/app.js so it is not overridden by the browser's default button-focus-after-click behavior.",
+      "severity": "medium",
+      "related_check": "open-ai-dialogue-from-guidance-card"
+    }
+  ],
+  "notes": [
+    "Deal Highlights feature (previously placeholder per prior briefings) is now a real, schema-driven render — data-testid contract (deal-highlights-render/product/pair/key-terms/benefit/risk) matches the briefing and is fully live.",
+    "Global notional (deal-notional-input) and dynamic per-product fields (deal-dynamic-<key>-input) already use distinct, unique testids — no duplicate-id defect found; the workflow-level duplicate scan across the whole DOM also returned zero duplicates.",
+    "aria-expanded/aria-hidden wiring and the close-button reset for the AI dialogue are correct; only the focus-the-textarea step is broken.",
+    "Backend suite (23 tests, pre-existing) re-run clean with no changes required; no new API-backed criteria were introduced in this iteration's briefing."
+  ]
+}

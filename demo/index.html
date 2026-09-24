@@ -36,11 +36,11 @@
       </div>
 
       <div class="email-fmt-tabs" role="tablist" aria-label="Email format">
-        <button class="email-fmt-tab is-active" type="button" role="tab" aria-selected="true" id="fmtTabFull" data-fmt="full" data-testid="format-full-termsheet-tab">
+        <button class="email-fmt-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="dealPreviewPanel" id="fmtTabFull" data-fmt="full" data-testid="format-full-termsheet-tab">
           <span class="eft-title">Full Termsheet</span>
           <span class="eft-sub">complete pricing &amp; legals</span>
         </button>
-        <button class="email-fmt-tab" type="button" role="tab" aria-selected="false" id="fmtTabHighlights" data-fmt="highlights" data-testid="format-deal-highlights-tab">
+        <button class="email-fmt-tab" type="button" role="tab" aria-selected="false" aria-controls="dealPreviewPanel" id="fmtTabHighlights" data-fmt="highlights" data-testid="format-deal-highlights-tab">
           <span class="eft-title">Deal Highlights</span>
           <span class="eft-sub">key levels &amp; payoff only</span>
         </button>
@@ -82,7 +82,9 @@
                   <div class="email-trade-string mono-field" id="demoTradeString">AUDUSD · Knock Out Conv. (LEV)</div>
                   <span class="email-fmt-chip is-full" id="demoFmtChip">FULL TERMSHEET</span>
                 </div>
-                <div class="email-trade-chart-placeholder" id="demoFmtPlaceholder">termsheet / chart preview renders here in the builder</div>
+                <div class="email-trade-render" id="dealPreviewPanel" role="tabpanel" aria-live="polite" data-testid="deal-preview-content">
+                  <div id="demoFmtPlaceholder"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -111,7 +113,7 @@
                 <div class="why-card" data-testid="product-why-card"><span class="why-label">Product WHY</span><p id="guidanceProductWhy" data-testid="product-why-value"></p></div>
               </div>
               <div class="guidance-grounding" data-testid="guidance-grounding-summary"><span class="why-label">Grounding snapshot</span><div class="grounding-pills"><span id="guidanceFamily" data-testid="guidance-product-family-pill">—</span><span id="guidanceProfile" data-testid="guidance-profile-pill">Profile ready</span></div></div>
-              <button class="btn btn-primary btn-wide" type="button" id="openAiFromGuidance" data-testid="ai-guidance-open-dialogue-button">Open AI dialogue <span aria-hidden="true">→</span></button>
+              <button class="btn btn-primary btn-wide" type="button" id="openAiFromGuidance" aria-controls="aiPopup" aria-expanded="false" data-testid="ai-guidance-open-dialogue-button">Open AI dialogue <span aria-hidden="true">→</span></button>
             </aside>
           </div>
 
