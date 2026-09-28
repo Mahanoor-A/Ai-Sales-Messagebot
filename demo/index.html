@@ -3,259 +3,275 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Grounded AI sales messaging inside a focused FX trade builder workflow.">
+  <meta name="description" content="Foundry FX Trade Builder with grounded AI sales messaging.">
   <title>Foundry FX — Trade Builder</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23111844'/%3E%3Cpath d='M24 6 40 15.2v17.6L24 42 8 32.8V15.2L24 6Z' fill='none' stroke='%23fff' stroke-width='2.6'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
   <script src="./data/product-schemas.sample.js"></script>
 </head>
-<body>
-  <header class="demo-bar" data-testid="app-header">
-    <div class="brand-lockup">
-      <svg class="brand-mark brand-mark-lg" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="10" fill="#111844"/><path d="M24 6 40 15.2v17.6L24 42 8 32.8V15.2L24 6Z" stroke="#FFFFFF" stroke-width="2.2"/><path d="M24 15.5 32 20.1v8.3L24 33l-8-4.6v-8.3l8-4.6Z" stroke="#7288AE" stroke-width="1.8"/><path d="M24 15.5V24m0 0 8-3.9M24 24l-8-3.9" stroke="#7288AE" stroke-width="1.3" opacity="0.8"/></svg>
-      <div><span class="demo-pill" data-testid="app-environment-badge">Trade Builder · Demo</span><h1 data-testid="app-title">Build a considered hedge</h1><p class="demo-sub" data-testid="app-subtitle">Shape the deal, give the AI the right context, then carry an editable message into Review &amp; Send.</p></div>
+<body class="ai-open">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.9 4.9L19 9.8l-4.9 1.9L12.2 16.6l-1.9-4.9L5.4 9.8l4.9-1.9L12 3Z"/><path d="M19 15.5 19.8 18l2.5.8-2.5.8L19 22l-.8-2.4-2.5-.8 2.5-.8Z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-logo" viewBox="0 0 48 48"><path d="M24 6 40 15.2v17.6L24 42 8 32.8V15.2L24 6Z" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M24 15.5 32 20.1v8.3L24 33l-8-4.6v-8.3l8-4.6Z" fill="none" stroke="#9aa9d6" stroke-width="2"/></symbol>
+  </svg>
+
+  <header class="topbar" data-testid="app-header">
+    <div class="topbar-brand">
+      <span class="logo"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-logo"/></svg></span>
+      <span class="brand-name">Foundry FX</span>
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-page" data-testid="app-title">Trade Builder</span>
     </div>
-    <button class="btn btn-glass" type="button" id="openSetupTop" data-testid="ai-setup-open-button">AI setup <span aria-hidden="true">↗</span></button>
+    <nav class="topbar-actions" aria-label="Workspace">
+      <button class="top-btn" type="button" id="openClients" data-testid="clients-open-button"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span>Clients</span></button>
+      <div class="account">
+        <button class="avatar-btn" type="button" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu" aria-label="Your account" data-testid="account-menu-button"><span class="avatar">You</span><svg class="icon icon-sm" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <div class="account-menu" id="accountMenu" role="menu" hidden data-testid="account-menu">
+          <div class="account-head"><span class="avatar avatar-lg">You</span><div><strong>Your account</strong><span>Advisor workspace</span></div></div>
+          <button type="button" role="menuitem" data-account="setup" data-testid="account-ai-setup"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span><strong>AI setup</strong><small>Writing style, tone and guidance</small></span></button>
+          <button type="button" role="menuitem" data-account="shortcuts" data-testid="account-shortcuts"><svg class="icon" aria-hidden="true"><use href="#i-bookmark"/></svg><span><strong>Saved key points</strong><small>Reusable shortcuts for drafting</small></span></button>
+          <button type="button" role="menuitem" data-account="clients" data-testid="account-clients"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span><strong>Client profiles</strong><small>Context the AI uses per client</small></span></button>
+        </div>
+      </div>
+    </nav>
   </header>
 
-  <main class="modal-backdrop is-open">
-    <div class="modal modal-wide">
-      <div class="modal-header" data-testid="review-and-send-modal">
-        <div class="modal-title-group">
-          <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-            <rect width="48" height="48" rx="10" fill="#111844"/>
-            <path d="M24 6 40 15.2v17.6L24 42 8 32.8V15.2L24 6Z" stroke="#FFFFFF" stroke-width="2.2"/>
-            <path d="M24 15.5 32 20.1v8.3L24 33l-8-4.6v-8.3l8-4.6Z" stroke="#7288AE" stroke-width="1.8"/>
-            <path d="M24 15.5V24m0 0 8-3.9M24 24l-8-3.9" stroke="#7288AE" stroke-width="1.3" opacity="0.8"/>
-          </svg>
-          <div><h2 class="modal-title" data-testid="review-and-send-title">Review &amp; send</h2><span class="modal-kicker" data-testid="review-and-send-kicker">Client-ready message workspace</span></div>
-        </div>
-        <button class="btn btn-icon" type="button" title="Close" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
-      </div>
-
-      <div class="email-fmt-tabs" role="tablist" aria-label="Email format">
-        <button class="email-fmt-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="dealPreviewPanel" id="fmtTabFull" data-fmt="full" data-testid="format-full-termsheet-tab">
-          <span class="eft-title">Full Termsheet</span>
-          <span class="eft-sub">complete pricing &amp; legals</span>
-        </button>
-        <button class="email-fmt-tab" type="button" role="tab" aria-selected="false" aria-controls="dealPreviewPanel" id="fmtTabHighlights" data-fmt="highlights" data-testid="format-deal-highlights-tab">
-          <span class="eft-title">Deal Highlights</span>
-          <span class="eft-sub">key levels &amp; payoff only</span>
-        </button>
-      </div>
-
-      <div class="modal-body email-fmt-panel">
-        <div class="form-grid">
-
-          <div class="builder-section-heading span-12" data-testid="trade-builder-section-heading">
-            <div><span class="section-eyebrow">01 · Context first</span><h3>Trade builder inputs</h3></div>
-            <span class="section-note" data-testid="trade-builder-section-note">AI guidance updates as the deal and client profile change</span>
-          </div>
-
-          <div class="email-recipients">
-            <div class="field"><label for="demoEmailTo">To · client</label>
-              <div class="email-to-chip" data-testid="review-recipient-client"><span class="etc-dot" aria-hidden="true"></span><span class="etc-addr" id="demoEmailTo" data-testid="review-recipient-value">—</span><span class="etc-lock" title="Fixed to this deal's client record, same as the real Trade Builder — the advisor can't retype it here, only Cc/Bcc are free text.">locked</span></div>
-            </div>
-            <div class="field"><label for="demoBcc">Bcc</label> <input id="demoBcc" type="text" placeholder="Add an email address" value="desk@foundryfx.com" data-testid="review-bcc-input"></div>
-            <div class="field"><label for="demoCc">Cc</label> <input id="demoCc" type="text" placeholder="Add an email address" data-testid="review-cc-input"></div>
-          </div>
-
-          <div class="field span-12"><label for="demoSubject">Subject</label> <input id="demoSubject" type="text" value="Your AUD/USD FX hedge — indicative pricing" data-testid="review-subject-input"></div>
-
-          <div class="field span-12">
-            <div class="field-label-row"><label for="demoIntro">Intro message</label>
-              <button class="btn btn-soft btn-xs" type="button" id="copyIntroBtn" title="Copy to clipboard" data-testid="review-copy-message-button">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                Copy
-              </button>
-            </div>
-            <textarea id="demoIntro" rows="6" placeholder="The polished message lands here. Edit freely — nothing is sent until you hit Send Email." data-testid="review-intro-message-input"></textarea>
-            <p class="field-hint" data-testid="review-message-hint">Shown as a short note above the termsheet. Use the <strong>AI Sales Message</strong> button to draft it, then edit every word here.</p>
-          </div>
-
-          <div class="field span-12">
-            <div class="email-trade-preview">
-              <div class="email-trade-chart-shell">
-                <div class="email-trade-head">
-                  <div class="email-trade-string mono-field" id="demoTradeString">AUDUSD · Knock Out Conv. (LEV)</div>
-                  <span class="email-fmt-chip is-full" id="demoFmtChip">FULL TERMSHEET</span>
-                </div>
-                <div class="email-trade-render" id="dealPreviewPanel" role="tabpanel" aria-live="polite" data-testid="deal-preview-content">
-                  <div id="demoFmtPlaceholder"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="builder-top-grid span-12">
-            <section class="context-card client-profile" id="clientProfileSection" data-testid="client-profile-section">
-              <div class="card-heading"><div><span class="section-eyebrow">Client context</span><h3>Client profile</h3></div><span class="saved-indicator" id="profileSavedIndicator" data-testid="client-profile-saved-status">Saved locally</span></div>
-              <p class="card-copy" data-testid="client-profile-description">Give the AI a useful starting point. These details stay in this browser and are included with each draft.</p>
-              <div class="profile-grid">
-                <div class="field"><label for="dcClientName">Client name</label><input id="dcClientName" type="text" value="Ada Novik" data-testid="client-name-input"></div>
-                <div class="field"><label for="dcClientCompany">Company</label><input id="dcClientCompany" type="text" value="Novik Trading" data-testid="client-company-input"></div>
-                <div class="field"><label for="dcClientIndustry">Industry</label><input id="dcClientIndustry" type="text" value="Import &amp; distribution" placeholder="e.g. Manufacturing" data-testid="client-industry-input"></div>
-                <div class="field"><label for="dcRiskAppetite">Risk appetite</label><select id="dcRiskAppetite" data-testid="client-risk-appetite-select"><option>Conservative</option><option selected>Balanced</option><option>Growth-oriented</option><option>Not set</option></select></div>
-                <div class="field"><label for="dcHedgingHorizon">Hedging horizon</label><select id="dcHedgingHorizon" data-testid="client-hedging-horizon-select"><option>Up to 3 months</option><option selected>3–12 months</option><option>12–24 months</option><option>Not set</option></select></div>
-                <div class="field"><label for="dcFunctionalCurrency">Functional currency</label><input id="dcFunctionalCurrency" type="text" value="AUD" maxlength="12" class="mono-field" data-testid="client-functional-currency-input"></div>
-              </div>
-              <div class="field profile-notes"><label for="dcClientNotes">Client context &amp; notes</label><textarea id="dcClientNotes" rows="3" placeholder="Budget rate, monthly requirement, operating context, objectives…" data-testid="client-context-notes-input">Budget rate 0.7200 AUD/USD · needs USD 3m per month · hedges out 12 months.</textarea></div>
-            </section>
-
-            <aside class="context-card ai-guidance" id="aiGuidancePanel" data-testid="ai-guidance-panel">
-              <div class="card-heading"><div><span class="section-eyebrow">Live guidance</span><h3>AI guidance</h3></div><button class="btn btn-soft btn-xs" type="button" id="openSetupGuidance" data-testid="ai-guidance-setup-button">Tune setup</button></div>
-              <p class="card-copy" data-testid="ai-guidance-description">A transparent view of the context the assistant will lean on. No external market feed is used.</p>
-              <div class="why-stack">
-                <div class="why-card" data-testid="market-why-card"><span class="why-label">Mkt WHY</span><p id="guidanceMarketWhy" data-testid="market-why-value"></p></div>
-                <div class="why-card" data-testid="client-why-card"><span class="why-label">Client WHY</span><p id="guidanceClientWhy" data-testid="client-why-value"></p></div>
-                <div class="why-card" data-testid="product-why-card"><span class="why-label">Product WHY</span><p id="guidanceProductWhy" data-testid="product-why-value"></p></div>
-              </div>
-              <div class="guidance-grounding" data-testid="guidance-grounding-summary"><span class="why-label">Grounding snapshot</span><div class="grounding-pills"><span id="guidanceFamily" data-testid="guidance-product-family-pill">—</span><span id="guidanceProfile" data-testid="guidance-profile-pill">Profile ready</span></div></div>
-              <button class="btn btn-primary btn-wide" type="button" id="openAiFromGuidance" aria-controls="aiPopup" aria-expanded="false" data-testid="ai-guidance-open-dialogue-button">Open AI dialogue <span aria-hidden="true">→</span></button>
-            </aside>
-          </div>
-
-          <details class="span-12 deal-context" id="dealContext" open data-testid="trade-builder-deal-inputs">
-            <summary>Deal inputs &amp; product grounding <span class="dc-sub">(the source context sent to the AI)</span></summary>
-            <div class="dc-grid">
-              <div class="field product-selector-field"><label for="dcProduct">Product family &amp; structure</label>
-                <select id="dcProduct" data-testid="product-family-selector"></select>
-                <span class="field-hint" id="dcProductMeta"></span>
-              </div>
-              <div class="field"><label for="dcPair">Pair</label> <input id="dcPair" type="text" data-testid="deal-pair-input"></div>
-              <div class="field"><label for="dcDirection">Direction</label> <input id="dcDirection" type="text" data-testid="deal-direction-input"></div>
-              <div class="field"><label for="dcNotional">Notional</label> <input id="dcNotional" type="text" class="mono-field" data-testid="deal-notional-input"></div>
-            </div>
-            <div class="dc-grid dc-grid-dynamic" id="dcDynamicFields" data-testid="deal-dynamic-fields"></div>
-            <div class="dc-outline" id="dcOutlineWrap" hidden>
-              <h4>Product outline <span class="dc-sub">(background — the AI does not invent beyond this)</span></h4>
-              <p id="dcOutline"></p>
-            </div>
-            <div class="dc-grounding">
-              <div class="dc-grounding-col">
-                <h4>Benefits</h4>
-                <ul id="dcBenefits"></ul>
-              </div>
-              <div class="dc-grounding-col risks">
-                <h4>Risks</h4>
-                <ul id="dcRisks"></ul>
-              </div>
-            </div>
-          </details>
-
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-soft" type="button" id="cancelDemo" data-testid="review-cancel-button">Cancel</button>
-        <button class="btn btn-primary" type="button" id="mockSend" data-testid="review-send-button">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg>
-          Send Email
-        </button>
-      </div>
-    </div>
-  </main>
-
-  <div class="ai-fab-root">
-    <section class="ai-popup" id="aiPopup" role="dialog" aria-labelledby="aiSalesLabel" aria-hidden="true" data-testid="ai-dialogue-box">
-      <div class="ai-popup-head">
+  <main class="workspace">
+    <section class="panel deal-panel" aria-labelledby="dealTitle" data-testid="trade-builder-deal-inputs">
+      <div class="panel-header">
         <div>
-          <span class="ai-popup-eyebrow">AI Sales Message</span>
-          <h3 id="aiSalesLabel">Draft a client message</h3>
+          <h1 class="panel-title" id="dealTitle">Deal inputs</h1>
+          <p class="panel-note">Build the trade here. The termsheet, AI grounding and intro message all follow what you enter.</p>
         </div>
-        <button class="btn btn-icon" type="button" id="aiPopupClose" title="Close" aria-label="Close" data-testid="ai-dialogue-close-button">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
-        </button>
+        <div class="panel-header-actions">
+          <span class="badge">Indicative</span>
+          <button class="ai-tab" type="button" id="aiPanelToggle" aria-controls="aiPanel" aria-expanded="true" data-testid="ai-sales-message-open-button"><svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg>AI Sales Message</button>
+        </div>
       </div>
 
-      <span class="ai-sales-hint" id="aiHint" data-testid="ai-dialogue-hint">Simply describe your sales pitch in short for a polished message to your client. Product logic / Mkt logic / Client portfolio fit.</span>
+      <div class="panel-body">
+        <div class="section">
+          <div class="section-head"><h2>Client</h2></div>
+          <div class="client-row">
+            <div class="field client-select-field">
+              <label for="dealClient">Client</label>
+              <select id="dealClient" data-testid="deal-client-select"></select>
+            </div>
+            <div class="client-card" id="clientSummary" data-testid="client-profile-summary"></div>
+          </div>
+        </div>
 
-      <div class="ai-profile-strip" data-testid="ai-active-preferences-strip"><span id="aiActiveStyle" data-testid="ai-active-writing-style">Executive</span><span id="aiActiveTone" data-testid="ai-active-tone">Consultative</span><span id="aiActivePositioning" data-testid="ai-active-positioning">Client outcome first</span></div>
+        <div class="section">
+          <div class="section-head"><h2>Structure</h2><span class="section-meta" id="dcProductMeta"></span></div>
+          <div class="grid grid-4">
+            <div class="field span-2"><label for="dcProduct">Product family &amp; structure</label><select id="dcProduct" data-testid="product-family-selector"></select></div>
+            <div class="field"><label for="dcPair">Pair</label><input id="dcPair" type="text" class="mono" autocomplete="off" data-testid="deal-pair-input"></div>
+            <div class="field"><label for="dcDirection">Direction</label><input id="dcDirection" type="text" autocomplete="off" data-testid="deal-direction-input"></div>
+            <div class="field span-2"><label for="dcNotional">Notional</label><input id="dcNotional" type="text" class="mono" autocomplete="off" data-testid="deal-notional-input"></div>
+          </div>
+        </div>
 
-      <div class="ai-note-row">
-        <textarea id="aiNote" rows="6" placeholder="e.g. Client wants protection around their budget rate. Highlight the key benefit and make the main trade-off clear." data-testid="ai-advisor-note-input"></textarea>
-        <button class="btn btn-icon mic-btn" id="micBtn" type="button" title="Dictate the note" aria-label="Dictate the note" data-testid="ai-dictation-button">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>
-        </button>
+        <div class="section">
+          <div class="section-head"><h2>Key terms</h2></div>
+          <div class="grid grid-4" id="dcDynamicFields" data-testid="deal-dynamic-fields"></div>
+        </div>
+
+        <details class="section grounding" id="dealContext">
+          <summary><span><h2>Product grounding</h2><small>Benefits, risks and outline the AI is allowed to use</small></span><svg class="icon chev" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+          <p class="outline" id="dcOutline" hidden></p>
+          <div class="grounding-cols">
+            <div class="grounding-col benefits"><h3>Benefits</h3><ul id="dcBenefits"></ul></div>
+            <div class="grounding-col risks"><h3>Risks</h3><ul id="dcRisks"></ul></div>
+          </div>
+        </details>
+
+        <div class="section">
+          <div class="section-head"><h2>Notes &amp; message</h2></div>
+          <div class="grid grid-2">
+            <div class="field">
+              <label for="dealNotes">Internal notes</label>
+              <textarea id="dealNotes" rows="7" placeholder="Private notes for your team." data-testid="deal-internal-notes-input"></textarea>
+              <p class="hint">Never shown to the client.</p>
+            </div>
+            <div class="field intro-field">
+              <div class="label-row"><label for="dealIntro">Intro message</label><button class="link-btn" type="button" id="copyIntroBtn" data-testid="intro-copy-button"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-copy"/></svg>Copy</button></div>
+              <textarea id="dealIntro" rows="7" placeholder="Short note to the client, shown above the termsheet. Draft it with AI Sales Message, then edit freely." data-testid="deal-intro-message-input"></textarea>
+              <p class="hint"><span id="introCount">0 words</span> · Sent to the client with the termsheet.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="shortcut-tools" data-testid="ai-key-point-shortcuts">
-        <div class="shortcut-head">
-          <span class="tools-label">Saved key points</span>
-          <button class="btn btn-soft btn-xs" type="button" id="saveShortcutBtn" data-testid="ai-save-shortcut-button">+ Save as shortcut</button>
-        </div>
+      <div class="panel-footer">
+        <span class="footer-note" id="tradeString">—</span>
+        <button class="btn btn-primary" type="button" id="openReview" data-testid="review-open-button"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Review &amp; send</button>
+      </div>
+    </section>
+
+    <aside class="ai-panel" id="aiPanel" aria-labelledby="aiPanelTitle" data-testid="ai-dialogue-box">
+      <div class="ai-head">
+        <div class="ai-title"><span class="ai-badge"><svg class="icon" aria-hidden="true"><use href="#i-spark"/></svg></span><div><h2 id="aiPanelTitle">AI Sales Message</h2><p>Your key points, written up as a client-ready intro.</p></div></div>
+        <button class="icon-btn" type="button" id="aiPanelClose" aria-label="Close AI Sales Message" data-testid="ai-dialogue-close-button"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+
+      <div class="ai-context" data-testid="ai-context-strip">
+        <span class="ctx-chip" id="ctxClient"></span>
+        <span class="ctx-chip" id="ctxProduct"></span>
+        <button class="ctx-chip ctx-link" type="button" id="ctxSetup" title="Change in AI setup" data-testid="ai-active-preferences"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-sliders"/></svg><span id="ctxStyle"></span></button>
+      </div>
+
+      <div class="ai-block">
+        <div class="block-head"><h3>Saved key points</h3><button class="link-btn" type="button" id="saveShortcutBtn" data-testid="ai-save-shortcut-button"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-plus"/></svg>Save current</button></div>
         <div class="shortcut-chips" id="shortcutChips" data-testid="ai-shortcut-list"></div>
-        <p class="shortcut-empty" id="shortcutEmpty" data-testid="ai-shortcut-empty">No shortcuts yet. Type your key points, save them, and reuse them on the next product.</p>
+        <p class="empty" id="shortcutEmpty" data-testid="ai-shortcut-empty">Save your key points once, then reuse them on the next product.</p>
         <div class="shortcut-save" id="shortcutSaveRow" hidden>
           <input id="shortcutName" type="text" maxlength="40" placeholder="Name it, e.g. Budget protection pitch" data-testid="ai-shortcut-name-input">
-          <button class="btn btn-primary btn-xs" type="button" id="shortcutConfirm" data-testid="ai-shortcut-confirm-button">Save</button>
-          <button class="btn btn-soft btn-xs" type="button" id="shortcutCancel" data-testid="ai-shortcut-cancel-button">Cancel</button>
+          <button class="btn btn-primary btn-sm" type="button" id="shortcutConfirm" data-testid="ai-shortcut-confirm-button">Save</button>
+          <button class="btn btn-sm" type="button" id="shortcutCancel" data-testid="ai-shortcut-cancel-button">Cancel</button>
         </div>
       </div>
 
-      <div class="tone-tools" data-testid="ai-style-shortcuts">
-        <span class="tools-label">Quick style</span>
-        <button type="button" class="style-pill is-active" data-style="Executive" data-testid="ai-style-executive-button">Executive</button>
-        <button type="button" class="style-pill" data-style="Concise" data-testid="ai-style-concise-button">Concise</button>
-        <button type="button" class="style-pill" data-style="Relationship-first" data-testid="ai-style-relationship-button">Relationship-first</button>
-      </div>
-
-      <div class="ai-toggle-row">
-        <label class="ai-toggle"><input type="checkbox" id="toggleSubject" data-testid="ai-suggest-subject-toggle"> Suggest a subject line</label>
-        <label class="ai-toggle"><input type="checkbox" id="toggleAlt" data-testid="ai-show-alternative-toggle"> Show alternative version</label>
-      </div>
-
-      <div class="ai-actions">
-        <button class="btn btn-primary" id="draftBtn" type="button" data-testid="ai-draft-button">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-          <span id="draftBtnLabel">Draft with AI</span>
-        </button>
-        <span class="ai-status" id="aiStatus" role="status" data-testid="ai-draft-status"></span>
-      </div>
-
-      <div class="ai-history" id="aiHistory" hidden>
-        <span class="ai-history-label">Draft history</span>
-        <div class="ai-history-chips" id="aiHistoryChips"></div>
-        <span class="ai-history-count" id="aiHistoryCount"></span>
-      </div>
-
-      <div class="ai-alt" id="aiAlt" hidden>
-        <div class="ai-alt-head">
-          <span class="ai-alt-label">Alternative angle <span class="ai-alt-flag" title="Interpretation of the spec's open &quot;Show alternative&quot; item — same facts, different tone/angle. Confirm intent with Hannah before treating this as final.">⚑ interpretation, confirm w/ Hannah</span></span>
-        <button class="btn btn-soft btn-xs" type="button" id="useAltBtn" data-testid="ai-use-alternative-button">Use this instead</button>
+      <div class="ai-block">
+        <div class="block-head"><label for="aiNote"><h3>Your key points</h3></label><span class="block-meta">Type or dictate</span></div>
+        <div class="note-wrap">
+          <textarea id="aiNote" rows="6" placeholder="e.g. protects 0.72 budget rate&#10;top of the range, good chance of triggering&#10;covers 30% of monthly needs" data-testid="ai-advisor-note-input"></textarea>
+          <button class="mic-btn" id="micBtn" type="button" title="Dictate" aria-label="Dictate your key points" data-testid="ai-dictation-button"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg></button>
         </div>
-        <p class="ai-alt-text" id="aiAltText"></p>
       </div>
 
-      <p class="ai-popup-foot">Populates the Intro message below. Nothing is ever sent from here — review it and hit Send Email yourself.</p>
+      <div class="ai-block">
+        <div class="block-head"><h3>Style</h3></div>
+        <div class="pill-row" role="group" aria-label="Writing style" data-testid="ai-style-shortcuts">
+          <button type="button" class="pill" data-style="Executive" data-testid="ai-style-executive-button">Executive</button>
+          <button type="button" class="pill" data-style="Concise" data-testid="ai-style-concise-button">Concise</button>
+          <button type="button" class="pill" data-style="Relationship-first" data-testid="ai-style-relationship-button">Relationship-first</button>
+          <button type="button" class="pill" data-style="Technical" data-testid="ai-style-technical-button">Technical</button>
+        </div>
+        <div class="toggle-row">
+          <label class="switch"><input type="checkbox" id="toggleSubject" data-testid="ai-suggest-subject-toggle"><span class="track" aria-hidden="true"></span>Suggest a subject line</label>
+          <label class="switch"><input type="checkbox" id="toggleAlt" data-testid="ai-show-alternative-toggle"><span class="track" aria-hidden="true"></span>Show an alternative</label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" id="draftBtn" type="button" data-testid="ai-draft-button"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg><span id="draftBtnLabel">Draft intro message</span></button>
+      <p class="ai-status" id="aiStatus" role="status" data-testid="ai-draft-status"></p>
+
+      <div class="ai-block history" id="aiHistory" hidden>
+        <div class="block-head"><h3>Drafts</h3><span class="block-meta" id="aiHistoryCount"></span></div>
+        <div class="pill-row" id="aiHistoryChips"></div>
+      </div>
+
+      <div class="alt-card" id="aiAlt" hidden>
+        <div class="block-head"><h3>Alternative version</h3><button class="btn btn-sm" type="button" id="useAltBtn" data-testid="ai-use-alternative-button">Use this</button></div>
+        <p id="aiAltText"></p>
+      </div>
+
+      <details class="ai-block guidance" data-testid="ai-guidance-panel">
+        <summary><h3>What the AI works from</h3><svg class="icon icon-sm chev" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+        <div class="why"><span>Market</span><p id="guidanceMarketWhy"></p></div>
+        <div class="why"><span>Client</span><p id="guidanceClientWhy"></p></div>
+        <div class="why"><span>Product</span><p id="guidanceProductWhy"></p></div>
+        <p class="hint">Only the deal, client profile and product copy are used. No external market data, and every figure is kept exactly as entered.</p>
+      </details>
+    </aside>
+  </main>
+  <div class="scrim" id="aiScrim"></div>
+
+  <!-- Review & send -->
+  <div class="modal" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle" hidden data-testid="review-and-send-modal">
+    <div class="modal-scrim" data-close="review"></div>
+    <section class="modal-card">
+      <div class="modal-head"><div><span class="eyebrow">Ready for the client</span><h2 id="reviewTitle">Review &amp; send</h2></div><button class="icon-btn" type="button" data-close="review" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="modal-body">
+        <div class="grid grid-3 recipients">
+          <div class="field"><label>To</label><div class="to-chip" id="reviewTo" data-testid="review-recipient-value"></div></div>
+          <div class="field"><label for="reviewCc">Cc</label><input id="reviewCc" type="text" placeholder="Add an email address" data-testid="review-cc-input"></div>
+          <div class="field"><label for="reviewBcc">Bcc</label><input id="reviewBcc" type="text" placeholder="Add an email address" data-testid="review-bcc-input"></div>
+        </div>
+        <div class="field"><label for="reviewSubject">Subject</label><input id="reviewSubject" type="text" data-testid="review-subject-input"></div>
+        <div class="field"><label for="reviewIntro">Intro message</label><textarea id="reviewIntro" rows="5" placeholder="Leave blank to send the termsheet only." data-testid="review-intro-message-input"></textarea></div>
+        <div class="format-tabs" role="tablist" aria-label="Email format">
+          <button class="format-tab is-active" type="button" role="tab" aria-selected="true" id="fmtTabFull" data-testid="format-full-termsheet-tab"><strong>Full termsheet</strong><span>Complete pricing &amp; legals</span></button>
+          <button class="format-tab" type="button" role="tab" aria-selected="false" id="fmtTabHighlights" data-testid="format-deal-highlights-tab"><strong>Deal highlights</strong><span>Key levels &amp; payoff only</span></button>
+        </div>
+        <div class="preview" id="dealPreview" role="tabpanel" aria-live="polite" data-testid="deal-preview-content"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" type="button" data-close="review" data-testid="review-cancel-button">Cancel</button>
+        <button class="btn btn-primary" type="button" id="sendBtn" data-testid="review-send-button"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Send email</button>
+      </div>
     </section>
-
-    <button class="ai-fab" id="aiFab" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="aiPopup" data-testid="ai-sales-message-open-button">
-      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 1.9 4.9L19 9.8l-4.9 1.9L12.2 16.6l-1.9-4.9L5.4 9.8l4.9-1.9L12 3Z"></path><path d="M19 15.5 19.8 18l2.5.8-2.5.8L19 22l-.8-2.4-2.5-.8 2.5-.8Z"></path></svg>
-      <span>AI Sales Message</span>
-    </button>
   </div>
 
-  <div class="setup-drawer" id="setupDrawer" aria-hidden="true" data-testid="ai-setup-preferences-modal">
-    <div class="setup-scrim" id="setupScrim"></div>
-    <section class="setup-panel" role="dialog" aria-labelledby="setupTitle">
-      <div class="setup-header"><div><span class="section-eyebrow">Advisor workspace</span><h2 id="setupTitle" data-testid="ai-setup-title">AI setup</h2><p data-testid="ai-setup-description">Set the editorial guardrails that make the first draft feel like yours.</p></div><button class="btn btn-icon" type="button" id="closeSetup" aria-label="Close AI setup" data-testid="ai-setup-close-button">×</button></div>
-      <div class="setup-body">
-        <div class="setup-grid">
-          <div class="field"><label for="prefWritingStyle">Writing style</label><select id="prefWritingStyle" data-testid="ai-writing-style-select"><option>Concise</option><option selected>Executive</option><option>Technical</option><option>Relationship-first</option></select></div>
-          <div class="field"><label for="prefTone">Tone</label><select id="prefTone" data-testid="ai-tone-select"><option>Formal</option><option selected>Consultative</option><option>Direct</option><option>Warm</option></select></div>
+  <!-- Clients -->
+  <div class="drawer" id="clientsDrawer" aria-hidden="true" data-testid="clients-drawer">
+    <div class="drawer-scrim" data-close="clients"></div>
+    <section class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="clientsTitle">
+      <div class="drawer-head"><div><span class="eyebrow">Client records</span><h2 id="clientsTitle">Client profiles</h2><p>The context the AI uses whenever anyone drafts for this client.</p></div><button class="icon-btn" type="button" data-close="clients" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="drawer-body clients-body">
+        <div class="client-list-wrap">
+          <button class="btn btn-block" type="button" id="newClientBtn" data-testid="client-new-button"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>New client</button>
+          <ul class="client-list" id="clientList" data-testid="client-list"></ul>
         </div>
-        <div class="field"><label for="prefPositioning">Sales positioning</label><textarea id="prefPositioning" rows="3" data-testid="ai-sales-positioning-input">Lead with the client's practical outcome, then make benefits and trade-offs explicit.</textarea><p class="field-hint">A direction for emphasis, not permission to add facts.</p></div>
-        <div class="setup-rule"><span>Master guidance</span><span>Editable reference</span></div>
-        <div class="field"><label for="prefMktWhy">Mkt WHY</label><textarea id="prefMktWhy" rows="3" data-testid="ai-master-market-why-input">Use only the market rationale supplied in the advisor note and deal context. Do not add external market commentary.</textarea></div>
-        <div class="field"><label for="prefClientWhy">Client WHY</label><textarea id="prefClientWhy" rows="3" data-testid="ai-master-client-why-input">Connect the stated client objective, risk appetite and hedging horizon to the proposed structure without inventing suitability claims.</textarea></div>
-        <div class="field"><label for="prefProductWhy">Product WHY</label><textarea id="prefProductWhy" rows="3" data-testid="ai-master-product-why-input">Explain the supplied product benefits and risks plainly. Preserve every rate, amount and condition exactly.</textarea></div>
+        <form class="client-form" id="clientForm" autocomplete="off">
+          <h3 id="clientFormTitle">Edit client</h3>
+          <div class="grid grid-2">
+            <div class="field"><label for="cfName">Contact name</label><input id="cfName" data-key="clientName" data-testid="client-name-input"></div>
+            <div class="field"><label for="cfCompany">Company</label><input id="cfCompany" data-key="clientCompany" data-testid="client-company-input"></div>
+            <div class="field"><label for="cfEmail">Email</label><input id="cfEmail" type="email" data-key="clientEmail" data-testid="client-email-input"></div>
+            <div class="field"><label for="cfIndustry">Industry</label><input id="cfIndustry" data-key="clientIndustry" placeholder="e.g. Manufacturing" data-testid="client-industry-input"></div>
+            <div class="field"><label for="cfRisk">Risk appetite</label><select id="cfRisk" data-key="riskAppetite" data-testid="client-risk-appetite-select"><option>Conservative</option><option>Balanced</option><option>Growth-oriented</option><option>Not set</option></select></div>
+            <div class="field"><label for="cfHorizon">Hedging horizon</label><select id="cfHorizon" data-key="hedgingHorizon" data-testid="client-hedging-horizon-select"><option>Up to 3 months</option><option>3–12 months</option><option>12–24 months</option><option>Not set</option></select></div>
+            <div class="field"><label for="cfCcy">Functional currency</label><input id="cfCcy" data-key="functionalCurrency" maxlength="12" class="mono" data-testid="client-functional-currency-input"></div>
+          </div>
+          <div class="field"><label for="cfNotes">Context &amp; objectives</label><textarea id="cfNotes" data-key="clientNotes" rows="4" placeholder="Budget rate, monthly requirement, operating context, objectives…" data-testid="client-context-notes-input"></textarea></div>
+          <div class="form-actions">
+            <button class="btn btn-danger-ghost" type="button" id="deleteClientBtn" data-testid="client-delete-button"><svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg>Delete</button>
+            <button class="btn btn-primary" type="submit" data-testid="client-save-button">Save client</button>
+          </div>
+        </form>
       </div>
-      <div class="setup-footer"><button class="btn btn-soft" type="button" id="resetSetup" data-testid="ai-setup-reset-button">Reset defaults</button><button class="btn btn-primary" type="button" id="saveSetup" data-testid="ai-setup-save-button">Save setup</button></div>
     </section>
   </div>
+
+  <!-- AI setup (from the profile menu) -->
+  <div class="drawer" id="setupDrawer" aria-hidden="true" data-testid="ai-setup-preferences-modal">
+    <div class="drawer-scrim" data-close="setup"></div>
+    <section class="drawer-panel drawer-narrow" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+      <div class="drawer-head"><div><span class="eyebrow">Your account</span><h2 id="setupTitle" data-testid="ai-setup-title">AI setup</h2><p>How your drafts should sound. Applies to every deal you draft.</p></div><button class="icon-btn" type="button" data-close="setup" aria-label="Close" data-testid="ai-setup-close-button"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="drawer-body">
+        <div class="grid grid-2">
+          <div class="field"><label for="prefWritingStyle">Writing style</label><select id="prefWritingStyle" data-testid="ai-writing-style-select"><option>Concise</option><option>Executive</option><option>Technical</option><option>Relationship-first</option></select></div>
+          <div class="field"><label for="prefTone">Tone</label><select id="prefTone" data-testid="ai-tone-select"><option>Formal</option><option>Consultative</option><option>Direct</option><option>Warm</option></select></div>
+        </div>
+        <div class="field"><label for="prefPositioning">Sales positioning</label><textarea id="prefPositioning" rows="3" data-testid="ai-sales-positioning-input"></textarea><p class="hint">Where to put the emphasis. It never adds facts.</p></div>
+        <div class="setup-divider"><span>Guidance</span></div>
+        <div class="field"><label for="prefMktWhy">Market WHY</label><textarea id="prefMktWhy" rows="3" data-testid="ai-master-market-why-input"></textarea></div>
+        <div class="field"><label for="prefClientWhy">Client WHY</label><textarea id="prefClientWhy" rows="3" data-testid="ai-master-client-why-input"></textarea></div>
+        <div class="field"><label for="prefProductWhy">Product WHY</label><textarea id="prefProductWhy" rows="3" data-testid="ai-master-product-why-input"></textarea></div>
+        <div class="setup-divider" id="shortcutsSection"><span>Saved key points</span></div>
+        <ul class="manage-list" id="manageShortcuts" data-testid="setup-shortcut-list"></ul>
+      </div>
+      <div class="drawer-foot"><button class="btn" type="button" id="resetSetup" data-testid="ai-setup-reset-button">Reset to defaults</button><button class="btn btn-primary" type="button" id="saveSetup" data-testid="ai-setup-save-button">Save setup</button></div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="./app.js"></script>
 </body>
