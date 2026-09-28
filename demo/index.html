@@ -181,6 +181,20 @@
         </button>
       </div>
 
+      <div class="shortcut-tools" data-testid="ai-key-point-shortcuts">
+        <div class="shortcut-head">
+          <span class="tools-label">Saved key points</span>
+          <button class="btn btn-soft btn-xs" type="button" id="saveShortcutBtn" data-testid="ai-save-shortcut-button">+ Save as shortcut</button>
+        </div>
+        <div class="shortcut-chips" id="shortcutChips" data-testid="ai-shortcut-list"></div>
+        <p class="shortcut-empty" id="shortcutEmpty" data-testid="ai-shortcut-empty">No shortcuts yet. Type your key points, save them, and reuse them on the next product.</p>
+        <div class="shortcut-save" id="shortcutSaveRow" hidden>
+          <input id="shortcutName" type="text" maxlength="40" placeholder="Name it, e.g. Budget protection pitch" data-testid="ai-shortcut-name-input">
+          <button class="btn btn-primary btn-xs" type="button" id="shortcutConfirm" data-testid="ai-shortcut-confirm-button">Save</button>
+          <button class="btn btn-soft btn-xs" type="button" id="shortcutCancel" data-testid="ai-shortcut-cancel-button">Cancel</button>
+        </div>
+      </div>
+
       <div class="tone-tools" data-testid="ai-style-shortcuts">
         <span class="tools-label">Quick style</span>
         <button type="button" class="style-pill is-active" data-style="Executive" data-testid="ai-style-executive-button">Executive</button>

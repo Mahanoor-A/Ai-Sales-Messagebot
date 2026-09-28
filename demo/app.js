@@ -2,7 +2,7 @@
 
 (function () {
   const $ = (id) => document.getElementById(id);
-  const STORAGE_KEYS = { profile: "foundryfx.clientProfile", prefs: "foundryfx.aiPreferences" };
+  const STORAGE_KEYS = { profile: "foundryfx.clientProfile", prefs: "foundryfx.aiPreferences", shortcuts: "foundryfx.keyPointShortcuts" };
 
   const DEFAULT_PROFILE = {
     clientName: "Ada Novik",
@@ -31,6 +31,7 @@
   }
   let profile = readSaved(STORAGE_KEYS.profile, DEFAULT_PROFILE);
   let prefs = readSaved(STORAGE_KEYS.prefs, DEFAULT_PREFS);
+  let shortcuts = (() => { try { const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.shortcuts) || "[]"); return Array.isArray(list) ? list.filter((s) => s && s.name && s.note) : []; } catch (_error) { return []; } })();
 
   class DraftHistory {
     constructor() { this.items = []; this.current = -1; }
@@ -182,6 +183,38 @@
   function closePopup() { els.popup.classList.remove("is-open"); els.popup.setAttribute("aria-hidden", "true"); els.fab.classList.remove("is-open"); els.fab.setAttribute("aria-expanded", "false"); els.guidanceOpen.setAttribute("aria-expanded", "false"); }
   function openSetup() { $("setupDrawer").classList.add("is-open"); $("setupDrawer").setAttribute("aria-hidden", "false"); syncPrefInputs(); prefEls.writingStyle.focus(); }
   function closeSetup() { $("setupDrawer").classList.remove("is-open"); $("setupDrawer").setAttribute("aria-hidden", "true"); }
+  // Saved key points: per-advisor shortcuts that refill the note so the same draft logic can be reused on the next product.
+  const shortcutEls = { chips: $("shortcutChips"), empty: $("shortcutEmpty"), saveBtn: $("saveShortcutBtn"), saveRow: $("shortcutSaveRow"), name: $("shortcutName"), confirm: $("shortcutConfirm"), cancel: $("shortcutCancel") };
+  function renderShortcuts() {
+    const current = els.note.value.trim();
+    shortcutEls.empty.hidden = shortcuts.length > 0;
+    shortcutEls.chips.innerHTML = shortcuts.map((s, index) => `<span class="shortcut-chip${s.note === current ? " is-current" : ""}"><button type="button" class="shortcut-use" data-use="${index}" title="${escapeHtml(s.note)}" data-testid="ai-shortcut-use-${index + 1}">${escapeHtml(s.name)}</button><button type="button" class="shortcut-del" data-del="${index}" aria-label="Delete shortcut ${escapeHtml(s.name)}" title="Delete" data-testid="ai-shortcut-delete-${index + 1}">×</button></span>`).join("");
+  }
+  function openShortcutSave() {
+    const note = els.note.value.trim(); if (!note) { setStatus("Type your key points first, then save them as a shortcut.", "error"); els.note.focus(); return; }
+    shortcutEls.saveRow.hidden = false; shortcutEls.name.value = note.split("\n")[0].slice(0, 40); shortcutEls.name.focus(); shortcutEls.name.select();
+  }
+  function closeShortcutSave() { shortcutEls.saveRow.hidden = true; shortcutEls.name.value = ""; }
+  function confirmShortcutSave() {
+    const name = shortcutEls.name.value.trim(); const note = els.note.value.trim();
+    if (!name) { shortcutEls.name.focus(); return; }
+    if (!note) { closeShortcutSave(); setStatus("Type your key points first, then save them as a shortcut.", "error"); return; }
+    const existing = shortcuts.findIndex((s) => s.name.toLowerCase() === name.toLowerCase());
+    if (existing >= 0) shortcuts[existing] = { name, note }; else shortcuts.push({ name, note });
+    saveSaved(STORAGE_KEYS.shortcuts, shortcuts); closeShortcutSave(); renderShortcuts();
+    setStatus(existing >= 0 ? `Updated shortcut "${name}".` : `Saved "${name}". Pick it on any product to reuse these points.`, "ok");
+  }
+  shortcutEls.saveBtn.addEventListener("click", openShortcutSave);
+  shortcutEls.confirm.addEventListener("click", confirmShortcutSave);
+  shortcutEls.cancel.addEventListener("click", closeShortcutSave);
+  shortcutEls.name.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); confirmShortcutSave(); } else if (event.key === "Escape") { event.stopPropagation(); closeShortcutSave(); } });
+  shortcutEls.chips.addEventListener("click", (event) => {
+    const use = event.target.closest("[data-use]"); const del = event.target.closest("[data-del]");
+    if (use) { const s = shortcuts[Number(use.dataset.use)]; if (!s) return; els.note.value = s.note; renderShortcuts(); els.note.focus(); setStatus(`Loaded "${s.name}". Draft with AI to write it for ${deal.product || "this product"}.`, "ok"); }
+    else if (del) { const [removed] = shortcuts.splice(Number(del.dataset.del), 1); saveSaved(STORAGE_KEYS.shortcuts, shortcuts); renderShortcuts(); if (removed) setStatus(`Deleted shortcut "${removed.name}".`, ""); }
+  });
+  els.note.addEventListener("input", renderShortcuts);
+
   function setFormat(format) { activeFormat = format; const full = format === "full"; [els.fmtTabFull, els.fmtTabHighlights].forEach((tab, index) => { const active = index === (full ? 0 : 1); tab.classList.toggle("is-active", active); tab.setAttribute("aria-selected", String(active)); }); els.fmtChip.textContent = full ? "FULL TERMSHEET" : "DEAL HIGHLIGHTS"; els.fmtChip.classList.toggle("is-full", full); els.fmtChip.classList.toggle("is-highlights", !full); renderTradePreview(); setStatus(full ? "Full termsheet rendered from the current deal." : "Deal highlights rendered from the current key terms and payoff grounding.", "ok"); }
 
   Object.values(profileEls).forEach((input) => input?.addEventListener("input", readProfileInputs));
@@ -210,5 +243,5 @@
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; let recognition = null; let listening = false;
   if (!SpeechRecognition) { els.mic.disabled = true; els.mic.title = "Dictation is not supported in this browser — type the note instead."; } else { recognition = new SpeechRecognition(); recognition.continuous = true; recognition.interimResults = false; recognition.lang = navigator.language || "en-US"; recognition.onresult = (event) => { const parts = []; for (let i = event.resultIndex; i < event.results.length; i += 1) if (event.results[i].isFinal) parts.push(event.results[i][0].transcript); if (parts.length) els.note.value = `${els.note.value ? `${els.note.value.trimEnd()} ` : ""}${parts.join(" ").trim()}`; }; recognition.onend = () => { listening = false; els.mic.classList.remove("is-live"); }; recognition.onerror = (event) => { if (event?.error && !["no-speech", "aborted"].includes(event.error)) setStatus(`Dictation error: ${event.error}`, "error"); listening = false; els.mic.classList.remove("is-live"); }; els.mic.addEventListener("click", () => { if (listening) recognition.stop(); else { try { recognition.start(); } catch (_error) {} listening = true; els.mic.classList.add("is-live"); setStatus("Listening… speak into the microphone.", ""); } }); }
 
-  syncProfileInputs(); syncPrefInputs(); renderPreferenceStrip(); populateProductSelect(); els.product.value = "Knock Out Conv. (LEV)" in (window.DEMO_PRODUCT_SCHEMAS || {}) ? "Knock Out Conv. (LEV)" : els.product.options[0]?.value || ""; onProductChange(); updateRecipient();
+  syncProfileInputs(); syncPrefInputs(); renderPreferenceStrip(); populateProductSelect(); els.product.value = "Knock Out Conv. (LEV)" in (window.DEMO_PRODUCT_SCHEMAS || {}) ? "Knock Out Conv. (LEV)" : els.product.options[0]?.value || ""; onProductChange(); updateRecipient(); renderShortcuts();
 })();
