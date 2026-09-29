@@ -373,3 +373,116 @@ def test_endpoint_returns_draft_that_was_grounded(monkeypatch):
     assert captured["req"].deal_terms["pair"] == "EURUSD"
     assert captured["req"].product_benefits == ["participate if the KI has not been hit"]
     assert r.json()["model"] == "gpt-5-mini"
+
+def _stub_generation(monkeypatch):
+    monkeypatch.setattr(
+        "app.ai.generate_sales_message",
+        lambda client, req, model, temperature: ai.GeneratedMessage(message="Polished message."),
+    )
+
+
+def test_endpoint_gate_accepts_x_api_key_header(monkeypatch):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "api_token", "sekrit")
+    _stub_generation(monkeypatch)
+    r = client.post(
+        "/v1/ai/sales-message",
+        json={"product": "TARF", "advisor_note": "x"},
+        headers={"x-api-key": "sekrit"},
+    )
+    assert r.status_code == 200
+
+
+def test_endpoint_gate_accepts_any_of_several_keys(monkeypatch):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "api_token", "old-key, new-key")
+    _stub_generation(monkeypatch)
+    for key in ("old-key", "new-key"):
+        r = client.post(
+            "/v1/ai/sales-message",
+            json={"product": "TARF", "advisor_note": "x"},
+            headers={"authorization": f"Bearer {key}"},
+        )
+        assert r.status_code == 200
+    r = client.post(
+        "/v1/ai/sales-message",
+        json={"product": "TARF", "advisor_note": "x"},
+        headers={"authorization": "Bearer old-key, new-key"},
+    )
+    assert r.status_code == 401
+
+
+def test_healthz_reports_whether_auth_is_required(monkeypatch):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "api_token", "sekrit")
+    assert client.get("/healthz").json()["auth_required"] is True
+    monkeypatch.setattr(config.settings, "api_token", "")
+    assert client.get("/healthz").json()["auth_required"] is False
+
+
+def test_cors_origin_list_parses_and_trims():
+    from app.config import Settings
+
+    s = Settings(cors_origins=" https://a.example.com/ ,https://b.example.com,, ")
+    assert s.cors_origin_list == ["https://a.example.com", "https://b.example.com"]
+
+
+# ---------------------------------------------------------------------- #
+# Built-in page endpoint: keyless, same-origin only, rate-limited        #
+# ---------------------------------------------------------------------- #
+UI_BODY = {"product": "TARF", "advisor_note": "x"}
+SAME_ORIGIN = {"origin": "http://testserver", "host": "testserver"}
+
+
+@pytest.fixture
+def fresh_ui_limits(monkeypatch):
+    from app import main
+
+    main._ui_hits.clear()
+    main._ui_all.clear()
+    yield main
+    main._ui_hits.clear()
+    main._ui_all.clear()
+
+
+def test_ui_endpoint_works_without_key_even_when_api_key_is_set(monkeypatch, fresh_ui_limits):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "api_token", "sekrit")
+    _stub_generation(monkeypatch)
+    assert client.post("/v1/ui/sales-message", json=UI_BODY, headers=SAME_ORIGIN).status_code == 200
+    assert client.post("/v1/ai/sales-message", json=UI_BODY).status_code == 401
+
+
+def test_ui_endpoint_accepts_sec_fetch_site_same_origin(monkeypatch, fresh_ui_limits):
+    _stub_generation(monkeypatch)
+    r = client.post("/v1/ui/sales-message", json=UI_BODY, headers={"sec-fetch-site": "same-origin"})
+    assert r.status_code == 200
+
+
+def test_ui_endpoint_rejects_other_sites_and_non_browser_calls(monkeypatch, fresh_ui_limits):
+    _stub_generation(monkeypatch)
+    assert client.post("/v1/ui/sales-message", json=UI_BODY).status_code == 403
+    r = client.post("/v1/ui/sales-message", json=UI_BODY, headers={"origin": "https://evil.example.com"})
+    assert r.status_code == 403
+
+
+def test_ui_endpoint_rate_limits_per_visitor(monkeypatch, fresh_ui_limits):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "ui_rate_limit", 2)
+    _stub_generation(monkeypatch)
+    codes = [client.post("/v1/ui/sales-message", json=UI_BODY, headers=SAME_ORIGIN).status_code for _ in range(3)]
+    assert codes == [200, 200, 429]
+    other = {**SAME_ORIGIN, "x-forwarded-for": "203.0.113.9"}
+    assert client.post("/v1/ui/sales-message", json=UI_BODY, headers=other).status_code == 200
+
+
+def test_ui_endpoint_can_be_disabled(monkeypatch, fresh_ui_limits):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "ui_enabled", False)
+    assert client.post("/v1/ui/sales-message", json=UI_BODY, headers=SAME_ORIGIN).status_code == 404

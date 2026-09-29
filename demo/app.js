@@ -207,6 +207,7 @@
     if (which === "review") closeReview(); else closeDrawer(`${which}Drawer`);
   });
 
+
   // ---- AI panel -----------------------------------------------------------
   const mobileQuery = window.matchMedia("(max-width: 1100px)");
   function setPanel(open, remember = true) {
@@ -247,7 +248,8 @@
     };
   }
   async function draftNote(note) {
-    const response = await fetch("/v1/ai/sales-message", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(buildPayload(note)) });
+    // The built-in page uses the keyless, rate-limited UI endpoint; integrations use /v1/ai/sales-message with a key.
+    const response = await fetch("/v1/ui/sales-message", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(buildPayload(note)) });
     if (!response.ok) {
       let detail = response.statusText;
       try { const body = await response.json(); detail = typeof body.detail === "string" ? body.detail : Array.isArray(body.detail) ? body.detail.map((d) => d.msg).join("; ") : detail; } catch (_e) {}

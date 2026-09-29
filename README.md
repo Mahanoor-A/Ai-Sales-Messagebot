@@ -133,8 +133,17 @@ pytest
 - **Render/Cloud Run** both work; the two required env vars are
   `OPENAI_API_KEY` and `AI_MODEL` (default `gpt-4o-mini`, override per quality
   or budget). `AI_TEMPERATURE` defaults to `0.6`.
-- Optional `AI_API_TOKEN`: when set, every request must carry
-  `Authorization: Bearer <token>` (401 otherwise). Empty = open (demo mode).
+- `AI_API_TOKEN`: the API key(s). When set, every request must carry
+  `Authorization: Bearer <key>` or `X-API-Key: <key>` (401 otherwise); several
+  keys can be comma-separated. Empty = open. See [API.md](API.md) for the
+  integration guide.
+- The built-in web page never needs the key: it drafts through
+  `/v1/ui/sales-message`, which only accepts same-origin browser requests and is
+  rate-limited (`UI_RATE_LIMIT` per visitor, default 30, and
+  `UI_RATE_LIMIT_GLOBAL`, default 300, per `UI_RATE_WINDOW_SECONDS`, default
+  600). Set `UI_ENABLED=false` to turn the page's endpoint off.
+- Optional `CORS_ORIGINS`: comma-separated origins allowed to call the API from
+  a browser on another domain.
 - In production put the service behind TLS and your own auth; do not disable
   the token.
 - The demo is served from the same origin as the API here, so no CORS is

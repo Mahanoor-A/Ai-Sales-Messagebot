@@ -318,3 +318,4 @@ body.ai-open .ai-panel { display: flex; animation: slideIn .25s ease-out; }
   .account-menu { position: fixed; left: 12px; right: 12px; top: calc(var(--topbar-h) + 6px); width: auto; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+.modal-sm { width: min(460px, 100%); }
