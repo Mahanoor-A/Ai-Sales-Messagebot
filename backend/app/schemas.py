@@ -19,6 +19,8 @@ class SalesMessageRequest(BaseModel):
     writing_style: str | None = Field(default=None, max_length=120)
     tone: str | None = Field(default=None, max_length=120)
     sales_positioning: str | None = Field(default=None, max_length=2000)
+    advisor_guidance: str | None = Field(default=None, max_length=12000)
+    # Retained for older API consumers; new clients should send advisor_guidance.
     master_mkt_why: str | None = Field(default=None, max_length=4000)
     master_client_why: str | None = Field(default=None, max_length=4000)
     master_product_why: str | None = Field(default=None, max_length=4000)

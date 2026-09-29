@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
     model: str = os.getenv("AI_MODEL", "gpt-4o-mini")
     temperature: float = float(os.getenv("AI_TEMPERATURE", "0.6"))
+    # Global on/off switch for the AI feature.
+    ai_enabled: bool = os.getenv("AI_ENABLED", "true").lower() not in ("0", "false", "no")
+    # Optional organization-level grant/restriction policy. Comma-separated org IDs.
+    ai_org_allowlist: str = os.getenv("AI_ORG_ALLOWLIST", "")
+    ai_org_blocklist: str = os.getenv("AI_ORG_BLOCKLIST", "")
+    ai_allowed_roles: str = os.getenv("AI_ALLOWED_ROLES", "")
     # One key, or several comma-separated (e.g. one per consuming app, or old
     # and new during a rotation).
     api_token: str = os.getenv("AI_API_TOKEN", "")
@@ -33,6 +39,18 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip().rstrip("/") for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def org_allowlist(self) -> set[str]:
+        return {org.strip() for org in self.ai_org_allowlist.split(",") if org.strip()}
+
+    @property
+    def org_blocklist(self) -> set[str]:
+        return {org.strip() for org in self.ai_org_blocklist.split(",") if org.strip()}
+
+    @property
+    def allowed_roles(self) -> set[str]:
+        return {role.strip().lower() for role in self.ai_allowed_roles.split(",") if role.strip()}
 
     @property
     def key_configured(self) -> bool:

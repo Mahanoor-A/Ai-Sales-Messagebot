@@ -109,6 +109,11 @@
               <p class="hint">Never shown to the client.</p>
             </div>
             <div class="field intro-field">
+              <div class="field">
+                <label for="dealSubject">Email subject</label>
+                <input id="dealSubject" type="text" maxlength="300" placeholder="Subject line appears here after drafting" data-testid="deal-email-subject-input">
+                <p class="hint">Included in the email. You can edit it before review.</p>
+              </div>
               <div class="label-row"><label for="dealIntro">Intro message</label><button class="link-btn" type="button" id="copyIntroBtn" data-testid="intro-copy-button"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-copy"/></svg>Copy</button></div>
               <textarea id="dealIntro" rows="7" placeholder="Short note to the client, shown above the termsheet. Draft it with AI Sales Message, then edit freely." data-testid="deal-intro-message-input"></textarea>
               <p class="hint"><span id="introCount">0 words</span> · Sent to the client with the termsheet.</p>
@@ -183,7 +188,7 @@
 
       <details class="ai-block guidance" data-testid="ai-guidance-panel">
         <summary><h3>What the AI works from</h3><svg class="icon icon-sm chev" aria-hidden="true"><use href="#i-chev"/></svg></summary>
-        <div class="why"><span>Market</span><p id="guidanceMarketWhy"></p></div>
+        <div class="why"><span>Your guidance</span><p id="guidanceMarketWhy"></p></div>
         <div class="why"><span>Client</span><p id="guidanceClientWhy"></p></div>
         <div class="why"><span>Product</span><p id="guidanceProductWhy"></p></div>
         <p class="hint">Only the deal, client profile and product copy are used. No external market data, and every figure is kept exactly as entered.</p>
@@ -261,9 +266,7 @@
         </div>
         <div class="field"><label for="prefPositioning">Sales positioning</label><textarea id="prefPositioning" rows="3" data-testid="ai-sales-positioning-input"></textarea><p class="hint">Where to put the emphasis. It never adds facts.</p></div>
         <div class="setup-divider"><span>Guidance</span></div>
-        <div class="field"><label for="prefMktWhy">Market WHY</label><textarea id="prefMktWhy" rows="3" data-testid="ai-master-market-why-input"></textarea></div>
-        <div class="field"><label for="prefClientWhy">Client WHY</label><textarea id="prefClientWhy" rows="3" data-testid="ai-master-client-why-input"></textarea></div>
-        <div class="field"><label for="prefProductWhy">Product WHY</label><textarea id="prefProductWhy" rows="3" data-testid="ai-master-product-why-input"></textarea></div>
+        <div class="field"><label for="prefAdvisorGuidance">Draft guidance</label><textarea id="prefAdvisorGuidance" rows="10" data-testid="ai-advisor-guidance-input" placeholder="Add any guidance for the draft. You can organize it by market, client, product, or any other headings that work for you."></textarea><p class="hint">A sample is provided as a style reference. Its market commentary, numbers and product claims are examples only; the AI should use facts from the current deal only. Edit or replace it with your own guidance.</p></div>
         <div class="setup-divider" id="shortcutsSection"><span>Saved key points</span></div>
         <ul class="manage-list" id="manageShortcuts" data-testid="setup-shortcut-list"></ul>
       </div>

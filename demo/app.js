@@ -15,13 +15,30 @@
     { id: "c-novik", clientName: "Ada Novik", clientCompany: "Novik Trading", clientEmail: "ada.novik@example.com", clientIndustry: "Import & distribution", riskAppetite: "Balanced", hedgingHorizon: "3–12 months", functionalCurrency: "AUD", clientNotes: "Budget rate 0.7200 AUD/USD · needs USD 3m per month · hedges out 12 months." },
     { id: "c-harbour", clientName: "Tom Reyes", clientCompany: "Harbour Street Wines", clientEmail: "tom.reyes@example.com", clientIndustry: "Wine export", riskAppetite: "Conservative", hedgingHorizon: "Up to 3 months", functionalCurrency: "NZD", clientNotes: "Receives EUR from European distributors · wants certainty over the next two quarters." },
   ];
+  const PREVIOUS_DEFAULT_ADVISOR_GUIDANCE = [
+    "Market: Use only the market rationale supplied in the advisor note and deal context. Do not add external market commentary.",
+    "Client: Connect the stated client objective, risk appetite and hedging horizon to the proposed structure without inventing suitability claims.",
+    "Product: Explain the supplied product benefits and risks plainly. Preserve every rate, amount and condition exactly.",
+  ].join("\n\n");
+  const SAMPLE_ADVISOR_GUIDANCE = [
+      "Use this sample only as a reference for tone, structure and level of detail. Do not reuse its market claims, events, rates, product claims or other facts unless they are independently present in the current deal context or advisor note.",
+      "",
+      "Example:",
+      "Markets are currently reacting to developments in the US-Iran conflict, with bond yields ending higher and the Australian dollar showing slight weakness at 0.7020. As attention shifts to the RBA's decision, a further increase in the cash rate is widely anticipated.",
+      "",
+      "The Knock Out Conv. (LEV) product offers compelling advantages in this environment:",
+      "",
+      "- Participate in favourable exchange rate movements while maintaining protection at a known worst-case rate of 0.657.",
+      "",
+      "- Achieve enhanced exchange rates compared to standard options, aligning with your goal to reduce costs.",
+      "",
+      "- Maintain flexibility to adapt to market conditions while ensuring your hedging strategy is robust.",
+  ].join("\n");
   const DEFAULT_PREFS = {
     writingStyle: "Executive",
     tone: "Consultative",
     salesPositioning: "Lead with the client's practical outcome, then make benefits and trade-offs explicit.",
-    masterMktWhy: "Use only the market rationale supplied in the advisor note and deal context. Do not add external market commentary.",
-    masterClientWhy: "Connect the stated client objective, risk appetite and hedging horizon to the proposed structure without inventing suitability claims.",
-    masterProductWhy: "Explain the supplied product benefits and risks plainly. Preserve every rate, amount and condition exactly.",
+    advisorGuidance: SAMPLE_ADVISOR_GUIDANCE,
   };
 
   function loadClients() {
@@ -37,7 +54,23 @@
   let activeClientId = store.get(KEYS.activeClient, clients[0]?.id || "");
   if (!clients.some((c) => c.id === activeClientId)) activeClientId = clients[0]?.id || "";
   const activeClient = () => clients.find((c) => c.id === activeClientId) || {};
-  let prefs = { ...DEFAULT_PREFS, ...(store.get(KEYS.prefs, {}) || {}) };
+  const savedPrefs = store.get(KEYS.prefs, {}) || {};
+  let prefs = { ...DEFAULT_PREFS, ...savedPrefs };
+  if (savedPrefs.advisorGuidance === PREVIOUS_DEFAULT_ADVISOR_GUIDANCE) {
+    prefs.advisorGuidance = SAMPLE_ADVISOR_GUIDANCE;
+  }
+  if (!Object.prototype.hasOwnProperty.call(savedPrefs, "advisorGuidance")) {
+    const legacyGuidance = [
+      ["Market", savedPrefs.masterMktWhy],
+      ["Client", savedPrefs.masterClientWhy],
+      ["Product", savedPrefs.masterProductWhy],
+    ].filter(([, value]) => typeof value === "string" && value.trim())
+      .map(([label, value]) => `${label}: ${value.trim()}`);
+    if (legacyGuidance.length) prefs.advisorGuidance = legacyGuidance.join("\n\n");
+  }
+  delete prefs.masterMktWhy;
+  delete prefs.masterClientWhy;
+  delete prefs.masterProductWhy;
   let shortcuts = (() => { const list = store.get(KEYS.shortcuts, []); return Array.isArray(list) ? list.filter((s) => s && s.name && s.note) : []; })();
 
   // ---- helpers ------------------------------------------------------------
@@ -74,7 +107,7 @@
     client: $("dealClient"), clientSummary: $("clientSummary"),
     product: $("dcProduct"), productMeta: $("dcProductMeta"), pair: $("dcPair"), direction: $("dcDirection"), notional: $("dcNotional"), dynamicFields: $("dcDynamicFields"),
     outline: $("dcOutline"), benefits: $("dcBenefits"), risks: $("dcRisks"), tradeString: $("tradeString"),
-    notes: $("dealNotes"), intro: $("dealIntro"), introCount: $("introCount"), copyIntro: $("copyIntroBtn"),
+    notes: $("dealNotes"), subject: $("dealSubject"), intro: $("dealIntro"), introCount: $("introCount"), copyIntro: $("copyIntroBtn"),
     panel: $("aiPanel"), panelToggle: $("aiPanelToggle"), panelClose: $("aiPanelClose"), scrim: $("aiScrim"),
     ctxClient: $("ctxClient"), ctxProduct: $("ctxProduct"), ctxStyle: $("ctxStyle"),
     note: $("aiNote"), mic: $("micBtn"), draft: $("draftBtn"), draftLabel: $("draftBtnLabel"), status: $("aiStatus"),
@@ -82,7 +115,7 @@
     alt: $("aiAlt"), altText: $("aiAltText"), useAlt: $("useAltBtn"),
     guidanceMarketWhy: $("guidanceMarketWhy"), guidanceClientWhy: $("guidanceClientWhy"), guidanceProductWhy: $("guidanceProductWhy"),
   };
-  const prefEls = { writingStyle: $("prefWritingStyle"), tone: $("prefTone"), salesPositioning: $("prefPositioning"), masterMktWhy: $("prefMktWhy"), masterClientWhy: $("prefClientWhy"), masterProductWhy: $("prefProductWhy") };
+  const prefEls = { writingStyle: $("prefWritingStyle"), tone: $("prefTone"), salesPositioning: $("prefPositioning"), advisorGuidance: $("prefAdvisorGuidance") };
   let suggestedSubject = "";
 
   function setStatus(text, kind) { els.status.textContent = text; els.status.className = `ai-status${kind ? ` is-${kind}` : ""}`; }
@@ -229,7 +262,7 @@
   }
   function renderGuidance() {
     const c = activeClient(); const copy = termsheetCopy(deal.product, deal.pair, deal.notionalCcy);
-    els.guidanceMarketWhy.textContent = prefs.masterMktWhy || "Only the rationale in your key points.";
+    els.guidanceMarketWhy.textContent = prefs.advisorGuidance || "Only the rationale in your key points.";
     const bits = [c.clientCompany || c.clientName, c.riskAppetite && c.riskAppetite !== "Not set" && `${c.riskAppetite.toLowerCase()} risk appetite`, c.hedgingHorizon && c.hedgingHorizon !== "Not set" && `${c.hedgingHorizon.toLowerCase()} horizon`].filter(Boolean);
     els.guidanceClientWhy.textContent = bits.length ? `${bits.join(" · ")}.${c.clientNotes ? ` ${c.clientNotes}` : ""}` : "Complete the client profile to tailor the message.";
     els.guidanceProductWhy.textContent = copy.benefits[0] || copy.outline[0] || "Choose a structure to see its rationale.";
@@ -243,7 +276,7 @@
       product: deal.product, product_family: deal.productFamily, deal_terms: dealTerms, product_outline: copy.outline, product_benefits: copy.benefits, product_risks: copy.risks, advisor_note: note,
       client_name: c.clientName || null, client_company: c.clientCompany || null, client_industry: c.clientIndustry || null, client_risk_appetite: c.riskAppetite || null,
       client_hedging_horizon: c.hedgingHorizon || null, client_functional_currency: c.functionalCurrency || null, client_notes: c.clientNotes || null,
-      writing_style: prefs.writingStyle || null, tone: prefs.tone || null, sales_positioning: prefs.salesPositioning || null, master_mkt_why: prefs.masterMktWhy || null, master_client_why: prefs.masterClientWhy || null, master_product_why: prefs.masterProductWhy || null,
+      writing_style: prefs.writingStyle || null, tone: prefs.tone || null, sales_positioning: prefs.salesPositioning || null, advisor_guidance: prefs.advisorGuidance || null,
       suggest_subject: !!els.toggleSubject.checked, show_alternative: !!els.toggleAlt.checked,
     };
   }
@@ -283,7 +316,10 @@
     try {
       const result = await draftNote(note);
       history.push(result.message); historyIndex = history.length - 1; setIntro(result.message); renderHistory();
-      if (result.subject) suggestedSubject = result.subject;
+      if (result.subject) {
+        suggestedSubject = result.subject;
+        els.subject.value = result.subject;
+      }
       if (result.alternative) { pendingAlternative = result.alternative; els.altText.textContent = result.alternative; els.alt.hidden = false; }
       setStatus(result.subject ? `Added to Intro message. Suggested subject: “${result.subject}”` : "Added to Intro message. Edit it freely.", "ok");
     } catch (error) { setStatus(`Couldn't draft: ${error?.message || "unknown error"}`, "error"); }
@@ -365,11 +401,14 @@
   function openReview() {
     syncDealFromInputs(); const c = activeClient();
     review.to.innerHTML = c.id ? `<span class="client-avatar xs" aria-hidden="true">${esc(initials(c))}</span><span>${esc(c.clientCompany || c.clientName)}${c.clientEmail ? ` <small>&lt;${esc(c.clientEmail)}&gt;</small>` : ""}</span>` : `<span class="muted">No client selected</span>`;
-    review.subject.value = suggestedSubject || `Your ${displayPair(deal.pair)} ${deal.product} — indicative terms`;
+    const subject = els.subject.value.trim() || suggestedSubject || `Your ${displayPair(deal.pair)} ${deal.product} — indicative terms`;
+    els.subject.value = subject;
+    review.subject.value = subject;
     review.intro.value = els.intro.value; setFormat("full");
     lastFocus = document.activeElement; review.modal.hidden = false; document.body.classList.add("no-scroll"); setTimeout(() => review.subject.focus(), 30);
   }
   function closeReview() { if (review.modal.hidden) return; review.modal.hidden = true; if (!document.querySelector(".drawer.is-open")) document.body.classList.remove("no-scroll"); lastFocus?.focus?.(); }
+  review.subject.addEventListener("input", () => { els.subject.value = review.subject.value; });
   review.intro.addEventListener("input", () => { els.intro.value = review.intro.value; updateIntroCount(); });
   review.full.addEventListener("click", () => setFormat("full")); review.highlights.addEventListener("click", () => setFormat("highlights"));
   $("openReview").addEventListener("click", openReview);

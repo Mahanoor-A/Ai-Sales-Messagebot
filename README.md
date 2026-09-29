@@ -48,6 +48,17 @@ message lands in the editable Intro message box; every draft stays in the strip
 above it (replace-with-history). The **Send Email** button is **MOCKED** and does
 not email anything.
 
+## Feature gating and org-level rollout
+
+The service supports a simple rollout model for the AI feature itself:
+
+- `AI_ENABLED=false` disables the AI endpoints globally.
+- `AI_ORG_ALLOWLIST=org-123,org-456` only allows those organizations to use it.
+- `AI_ORG_BLOCKLIST=org-999` blocks a specific organization even if the global switch is on.
+- `AI_ALLOWED_ROLES=admin,team_lead` restricts access to selected roles.
+
+When using the API, send `X-Org-Id` and optionally `X-User-Role` headers. The same checks run before the provider call so the feature can be turned on/off or restricted at the organization level without changing the prompt logic.
+
 ## What the AI gets
 
 One call per draft. `deal_terms` is a plain label→value map, not a fixed set of

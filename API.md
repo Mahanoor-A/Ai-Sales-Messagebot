@@ -52,7 +52,8 @@ API from your backend**, not from browser code where users could read the key.
 | `writing_style` | string | no | `"Executive"`, `"Concise"`, `"Technical"`, `"Relationship-first"` |
 | `tone` | string | no | `"Formal"`, `"Consultative"`, `"Direct"`, `"Warm"` |
 | `sales_positioning` | string | no | Where to put the emphasis (never adds facts) |
-| `master_mkt_why` / `master_client_why` / `master_product_why` | string | no | Advisor's standing guidance |
+| `advisor_guidance` | string | no | Free-form standing guidance (max 12,000 characters). May include a sample output for tone/structure; its facts are not reused unless independently supported by the current deal, profile or advisor note. |
+| `master_mkt_why` / `master_client_why` / `master_product_why` | string | no | Legacy fields retained for existing integrations; new clients should use `advisor_guidance`. |
 | `suggest_subject` | bool | no | `true` also returns an email `subject` |
 | `show_alternative` | bool | no | `true` also returns an `alternative_message` (same facts, different angle) |
 

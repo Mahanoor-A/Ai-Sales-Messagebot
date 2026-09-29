@@ -17,7 +17,36 @@ def fake_key_available(monkeypatch):
 
     monkeypatch.setattr(config.settings, "openai_api_key", "test-key")
     monkeypatch.setattr(config.settings, "api_token", "")
+    monkeypatch.setattr(config.settings, "ai_enabled", True)
+    monkeypatch.setattr(config.settings, "ai_org_allowlist", "")
+    monkeypatch.setattr(config.settings, "ai_org_blocklist", "")
+    monkeypatch.setattr(config.settings, "ai_allowed_roles", "")
     yield
+
+
+def test_ai_feature_can_be_disabled_globally(monkeypatch):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "ai_enabled", False)
+    resp = client.post(
+        "/v1/ai/sales-message",
+        json={"product": "FEC", "advisor_note": "Need a hedge."},
+    )
+    assert resp.status_code == 403
+    assert "disabled" in resp.json()["detail"].lower()
+
+
+def test_ai_feature_respects_org_allowlist(monkeypatch):
+    from app import config
+
+    monkeypatch.setattr(config.settings, "ai_org_allowlist", "org-123")
+    resp = client.post(
+        "/v1/ai/sales-message",
+        json={"product": "FEC", "advisor_note": "Need a hedge."},
+        headers={"X-Org-Id": "org-999"},
+    )
+    assert resp.status_code == 403
+    assert "not allowed" in resp.json()["detail"].lower()
 
 
 # ---------------------------------------------------------------------- #
@@ -128,6 +157,31 @@ def test_builder_message_carries_client_profile_and_ai_setup():
         "Product WHY guidance",
     ]:
         assert expected in msg
+
+
+def test_builder_message_includes_free_form_advisor_guidance():
+    req = SalesMessageRequest(
+        product="FEC",
+        advisor_note="Focus on budget certainty.",
+        advisor_guidance=(
+            "Market: Use only the supplied rationale.\n\n"
+            "Client: Explain relevance to their stated objective.\n\n"
+            "Keep the product trade-offs clear."
+        ),
+    )
+    msg = ai.build_user_message(req)
+
+    assert "draft guidance and any sample output" in msg
+    assert "Market: Use only the supplied rationale." in msg
+    assert "Client: Explain relevance to their stated objective." in msg
+    assert "Keep the product trade-offs clear." in msg
+
+
+def test_system_prompt_treats_sample_guidance_as_style_only():
+    prompt = ai.SYSTEM_PROMPT.lower()
+    assert "sample output" in prompt
+    assert "do not reuse its market claims" in prompt
+    assert "unless independently supported" in prompt
 
 
 # ---------------------------------------------------------------------- #

@@ -33,11 +33,15 @@ SYSTEM_PROMPT = (
     "margin, desk revenue, commission, spread, or any other internal pricing "
     "component, even if such a term appears in the advisor's note or the data — omit "
     "it rather than repeat it.\n"
-    "Use the advisor's configured writing style, tone and sales positioning as editorial "
-    "direction, but never let those preferences introduce facts. Treat the Mkt WHY, "
-    "Client WHY and Product WHY guidance as a framework only: use it to organize facts "
-    "already present in the deal, profile, product outline or advisor note. If a WHY "
-    "section contains a claim that is not supported by the supplied facts, omit the claim. "
+    "Use the advisor's configured writing style, tone, sales positioning and free-form "
+    "draft guidance as editorial direction, but never let those preferences introduce facts. "
+    "Treat any headings or categories in the guidance as a framework only: use them to "
+    "organize facts already present in the deal, profile, product outline or advisor note. "
+    "If guidance contains an example draft or sample output, use it only to understand "
+    "desired tone, structure and level of detail. Do not reuse its market claims, events, "
+    "figures, product claims, recommendations or distinctive wording unless independently "
+    "supported by the current deal, profile or advisor note. Omit any claim unsupported by "
+    "those current facts. "
     "Write the message as polished, ready-to-send email prose: 2-4 short paragraphs, "
     "professional and plain, no jargon. Keep every number and level exactly as "
     "provided (do not round, convert or 'clean up' figures). If an amount has a "
@@ -109,6 +113,7 @@ def build_user_message(req: SalesMessageRequest) -> str:
             req.writing_style,
             req.tone,
             req.sales_positioning,
+            req.advisor_guidance,
             req.master_mkt_why,
             req.master_client_why,
             req.master_product_why,
@@ -121,6 +126,12 @@ def build_user_message(req: SalesMessageRequest) -> str:
             lines.append(f"- tone: {req.tone}")
         if req.sales_positioning:
             lines.append(f"- sales positioning: {req.sales_positioning}")
+        if req.advisor_guidance:
+            lines.append(
+                "- draft guidance and any sample output (editorial reference only; "
+                "not a source of deal facts):\n"
+                f"{req.advisor_guidance}"
+            )
         if req.master_mkt_why:
             lines.append(f"- Mkt WHY guidance: {req.master_mkt_why}")
         if req.master_client_why:

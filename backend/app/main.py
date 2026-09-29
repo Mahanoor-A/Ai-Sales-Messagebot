@@ -48,6 +48,63 @@ def require_token(request: Request) -> None:
         )
 
 
+def _org_id_from_request(request: Request) -> str | None:
+    for header_name in (
+        "x-org-id",
+        "x-organization-id",
+        "organization-id",
+        "x-tenant-id",
+        "tenant-id",
+    ):
+        value = request.headers.get(header_name, "").strip()
+        if value:
+            return value
+    return None
+
+
+def _role_from_request(request: Request) -> str | None:
+    for header_name in ("x-user-role", "x-role", "role"):
+        value = request.headers.get(header_name, "").strip()
+        if value:
+            return value.lower()
+    return None
+
+
+def require_ai_access(request: Request) -> None:
+    """Allow a global AI off switch and organization-level allow/block checks."""
+    if not settings.ai_enabled:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail="AI access is disabled for this environment.",
+        )
+
+    org_id = _org_id_from_request(request)
+    if settings.org_allowlist:
+        if not org_id:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                detail="AI access is restricted by organization. Supply X-Org-Id.",
+            )
+        if org_id not in settings.org_allowlist:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                detail=f"Organization '{org_id}' is not allowed to use AI.",
+            )
+    if settings.org_blocklist and org_id and org_id in settings.org_blocklist:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            detail=f"Organization '{org_id}' has AI disabled.",
+        )
+
+    if settings.allowed_roles:
+        role = _role_from_request(request)
+        if not role or role not in settings.allowed_roles:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN,
+                detail="This user role is not permitted to use AI.",
+            )
+
+
 app = FastAPI(title="Foundry FX — AI Sales Message", version="0.1.0")
 
 if settings.cors_origin_list:
@@ -55,7 +112,13 @@ if settings.cors_origin_list:
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
         allow_methods=["POST", "GET", "OPTIONS"],
-        allow_headers=["Authorization", "X-API-Key", "Content-Type"],
+        allow_headers=[
+            "Authorization",
+            "X-API-Key",
+            "X-Org-Id",
+            "X-User-Role",
+            "Content-Type",
+        ],
         max_age=600,
     )
 
@@ -66,13 +129,17 @@ def healthz():
         "status": "ok",
         "key_configured": settings.key_configured,
         "auth_required": settings.auth_required,
+        "ai_enabled": settings.ai_enabled,
+        "org_allowlist": sorted(settings.org_allowlist),
+        "org_blocklist": sorted(settings.org_blocklist),
+        "allowed_roles": sorted(settings.allowed_roles),
     }
 
 
 @app.post(
     "/v1/ai/sales-message",
     response_model=SalesMessageResponse,
-    dependencies=[Depends(require_token)],
+    dependencies=[Depends(require_token), Depends(require_ai_access)],
     tags=["ai"],
 )
 def sales_message(
@@ -138,7 +205,7 @@ def require_same_origin_and_rate_limit(request: Request) -> None:
 @app.post(
     "/v1/ui/sales-message",
     response_model=SalesMessageResponse,
-    dependencies=[Depends(require_same_origin_and_rate_limit)],
+    dependencies=[Depends(require_same_origin_and_rate_limit), Depends(require_ai_access)],
     tags=["ui"],
 )
 def ui_sales_message(
