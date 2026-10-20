@@ -4,7 +4,7 @@
   const $ = (id) => document.getElementById(id);
   const KEYS = {
     clients: "foundryfx.clients", activeClient: "foundryfx.activeClient", legacyProfile: "foundryfx.clientProfile",
-    prefs: "foundryfx.aiPreferences", shortcuts: "foundryfx.keyPointShortcuts", panel: "foundryfx.aiPanelOpen",
+    prefs: "foundryfx.aiPreferences", shortcuts: "foundryfx.keyPointShortcuts", panel: "foundryfx.aiPanelOpen", ranking: "foundryfx.orgSalesRanking",
   };
   const store = {
     get(key, fallback) { try { const raw = localStorage.getItem(key); return raw == null ? fallback : JSON.parse(raw); } catch (_e) { return fallback; } },
@@ -40,6 +40,16 @@
     salesPositioning: "Lead with the client's practical outcome, then make benefits and trade-offs explicit.",
     advisorGuidance: SAMPLE_ADVISOR_GUIDANCE,
   };
+  const DEFAULT_RANKING_INDICATORS = [
+    { id: "client-objectives", name: "References client objectives", guidance: "Connect the proposal to goals, priorities, or objectives explicitly present in the client context." },
+    { id: "strong-close", name: "Has a strong close", guidance: "End with a clear, appropriate close that invites a decision or response without overstating." },
+    { id: "clear-next-steps", name: "Clear next steps", guidance: "State a concrete next action for the advisor or client when supported by context." },
+    { id: "client-profile-alignment", name: "Aligns to client profile", guidance: "Tailor the wording to the supplied client profile, risk appetite, horizon, or industry where relevant." },
+    { id: "appropriate-urgency", name: "Sense of urgency", guidance: "Give a timely reason to act only when supported by supplied facts; do not create pressure or false urgency." },
+    { id: "trade-confirmation-link", name: "Click link to confirm trade", guidance: "Reference a trade confirmation or execution link only when one is actually supplied in the message or deal context." },
+    { id: "ongoing-engagement", name: "Ongoing communication / engagement", guidance: "Invite continued discussion, follow-up, or ongoing engagement in a way that fits the relationship." },
+    { id: "deal-parameter-alignment", name: "Aligns to priced product parameters", guidance: "Keep product description aligned with the supplied structure, currency pair, rates, levels, and other deal parameters; preserve them exactly." },
+  ];
 
   function loadClients() {
     let list = store.get(KEYS.clients, null);
@@ -55,6 +65,8 @@
   if (!clients.some((c) => c.id === activeClientId)) activeClientId = clients[0]?.id || "";
   const activeClient = () => clients.find((c) => c.id === activeClientId) || {};
   const savedPrefs = store.get(KEYS.prefs, {}) || {};
+  const savedRanking = store.get(KEYS.ranking, null);
+  let orgRanking = { indicators: Array.isArray(savedRanking?.indicators) && savedRanking.indicators.length ? savedRanking.indicators : DEFAULT_RANKING_INDICATORS.map((item) => ({ ...item })) };
   let prefs = { ...DEFAULT_PREFS, ...savedPrefs };
   if (savedPrefs.advisorGuidance === PREVIOUS_DEFAULT_ADVISOR_GUIDANCE) {
     prefs.advisorGuidance = SAMPLE_ADVISOR_GUIDANCE;
@@ -116,6 +128,7 @@
     guidanceMarketWhy: $("guidanceMarketWhy"), guidanceClientWhy: $("guidanceClientWhy"), guidanceProductWhy: $("guidanceProductWhy"),
   };
   const prefEls = { writingStyle: $("prefWritingStyle"), tone: $("prefTone"), salesPositioning: $("prefPositioning"), advisorGuidance: $("prefAdvisorGuidance") };
+  const rankingUI = { card: $("rankingCard"), title: $("rankingTitle"), score: $("rankingScore"), meter: $("rankingMeter"), marker: $("rankingMarker"), note: $("rankingNote"), indicators: $("rankingIndicators") };
   let suggestedSubject = "";
 
   function setStatus(text, kind) { els.status.textContent = text; els.status.className = `ai-status${kind ? ` is-${kind}` : ""}`; }
@@ -231,13 +244,14 @@
   accountMenu.addEventListener("click", (event) => {
     const item = event.target.closest("[data-account]"); if (!item) return; setMenu(false);
     if (item.dataset.account === "clients") openClients("edit");
+    else if (item.dataset.account === "ranking") openOrgRanking();
     else { openSetup(); if (item.dataset.account === "shortcuts") setTimeout(() => $("shortcutsSection").scrollIntoView({ behavior: "smooth", block: "start" }), 120); }
   });
 
   document.addEventListener("click", (event) => {
     const closer = event.target.closest("[data-close]"); if (!closer) return;
     const which = closer.dataset.close;
-    if (which === "review") closeReview(); else closeDrawer(`${which}Drawer`);
+    if (which === "review") closeReview(); else if (which === "sms") closeSms(); else closeDrawer(`${which}Drawer`);
   });
 
 
@@ -292,6 +306,47 @@
     return { message: String(data.message || "").trim(), subject: data.subject ? String(data.subject).trim() : "", alternative: data.alternative_message ? String(data.alternative_message).trim() : "" };
   }
 
+  function indicatorBand(score) { return score < 2.3 ? "red" : score < 3.8 ? "amber" : "green"; }
+  async function rankSalesMessage(message) {
+    if (!message?.trim()) { rankingUI.card.hidden = true; return; }
+    rankingUI.card.hidden = false; rankingUI.card.className = "ranking-card is-loading";
+    rankingUI.title.textContent = "Evaluating message…"; rankingUI.score.textContent = "";
+    rankingUI.note.textContent = "Checking the organization’s indicators."; rankingUI.indicators.innerHTML = "";
+    const client = activeClient();
+    const clientContext = [client.clientNotes, client.riskAppetite, client.hedgingHorizon, client.clientIndustry].filter(Boolean).join("; ");
+    const payload = buildPayload(els.note.value.trim() || message);
+    const dealContext = JSON.stringify({ product: payload.product, product_family: payload.product_family, deal_terms: payload.deal_terms, product_outline: payload.product_outline, product_benefits: payload.product_benefits, product_risks: payload.product_risks });
+    try {
+      const response = await fetch("/v1/ui/rank-sales-message", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ message, indicators: orgRanking.indicators, client_context: clientContext, deal_context: dealContext }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+      rankingUI.card.className = `ranking-card is-${data.band}`;
+      rankingUI.title.textContent = data.band === "green" ? "Strong sales positioning" : data.band === "amber" ? "Developing sales positioning" : "Poor sales positioning";
+      rankingUI.score.textContent = `${Number(data.overall_score).toFixed(1)} / 5`;
+      rankingUI.meter.setAttribute("aria-valuenow", String(data.overall_score));
+      rankingUI.marker.style.left = `${Math.max(0, Math.min(100, Number(data.overall_score) / 5 * 100))}%`;
+      rankingUI.note.textContent = `Equal-weight average across ${data.indicators.length} organization indicators.`;
+      rankingUI.indicators.innerHTML = data.indicators.map((result) => {
+        const indicator = orgRanking.indicators.find((item) => item.id === result.id);
+        if (!indicator) return "";
+        return `<li class="ranking-indicator is-${indicatorBand(result.score)}"><div><strong>${esc(indicator.name)}</strong><span>${result.score} / 5</span></div><p>${esc(result.evidence)}</p></li>`;
+      }).join("");
+    } catch (error) {
+      rankingUI.card.className = "ranking-card is-error"; rankingUI.title.textContent = "Ranking unavailable";
+      rankingUI.note.textContent = error?.message || "Could not evaluate this message.";
+    }
+  }
+  $("recheckRanking").addEventListener("click", () => rankSalesMessage(els.intro.value.trim()));
+  els.intro.addEventListener("input", () => {
+    if (!rankingUI.card.hidden && !rankingUI.card.classList.contains("is-loading")) {
+      rankingUI.card.classList.add("is-stale"); rankingUI.title.textContent = "Message edited";
+      rankingUI.score.textContent = "Stale"; rankingUI.note.textContent = "Recheck the ranking to update the score for this version.";
+    }
+  });
+
   function setIntro(text) {
     els.intro.value = text; updateIntroCount();
     els.intro.classList.remove("flash"); void els.intro.offsetWidth; els.intro.classList.add("flash");
@@ -301,31 +356,57 @@
   els.intro.addEventListener("input", updateIntroCount);
 
   const history = []; let historyIndex = -1; let pendingAlternative = "";
-  function renderHistory() {
-    if (history.length <= 1) { els.history.hidden = true; return; }
-    els.history.hidden = false; els.historyCount.textContent = `${historyIndex + 1} of ${history.length}`;
-    els.historyChips.innerHTML = history.map((_, i) => `<button type="button" class="pill${i === historyIndex ? " is-active" : ""}" data-i="${i}" data-testid="ai-history-draft-${i + 1}">Draft ${i + 1}</button>`).join("");
+  function addHistoryDraft(message) {
+    const product = deal.product || "Sales message";
+    const sequence = history.filter((draft) => draft.product === product).reduce((max, draft) => Math.max(max, draft.sequence), 0) + 1;
+    history.push({ message, product, sequence, name: `${product} draft ${sequence}` });
+    historyIndex = history.length - 1;
   }
-  els.historyChips.addEventListener("click", (event) => { const btn = event.target.closest("[data-i]"); if (!btn) return; historyIndex = Number(btn.dataset.i); setIntro(history[historyIndex]); renderHistory(); setStatus(`Restored draft ${historyIndex + 1}.`, "ok"); });
+  function renderHistory() {
+    if (!history.length) { els.history.hidden = true; els.historyChips.innerHTML = ""; els.historyCount.textContent = ""; return; }
+    els.history.hidden = false; els.historyCount.textContent = `${history.length} saved`;
+    els.historyChips.innerHTML = history.map((draft, i) => `<span class="draft-entry"><button type="button" class="pill${i === historyIndex ? " is-active" : ""}" data-i="${i}" title="${esc(draft.name)}" aria-pressed="${i === historyIndex}" data-testid="ai-history-draft-${i + 1}">${esc(draft.name)}</button><button type="button" class="draft-remove" data-delete-draft="${i}" aria-label="Delete ${esc(draft.name)}" title="Delete draft"><svg class="icon icon-xs" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join("");
+  }
+  function clearActiveDraft() {
+    setIntro(""); els.subject.value = ""; suggestedSubject = ""; pendingAlternative = ""; els.alt.hidden = true; rankingUI.card.hidden = true;
+  }
+  els.historyChips.addEventListener("click", (event) => {
+    const remove = event.target.closest("[data-delete-draft]");
+    if (remove) {
+      const index = Number(remove.dataset.deleteDraft); const wasActive = index === historyIndex;
+      history.splice(index, 1);
+      if (!history.length) { historyIndex = -1; renderHistory(); clearActiveDraft(); setStatus("Draft removed.", "ok"); return; }
+      if (index < historyIndex) historyIndex -= 1;
+      else if (wasActive) historyIndex = Math.min(index, history.length - 1);
+      renderHistory();
+      if (wasActive) { pendingAlternative = ""; els.alt.hidden = true; setIntro(history[historyIndex].message); rankSalesMessage(history[historyIndex].message); }
+      setStatus("Draft removed.", "ok"); return;
+    }
+    const btn = event.target.closest("[data-i]"); if (!btn) return;
+    historyIndex = Number(btn.dataset.i); pendingAlternative = ""; els.alt.hidden = true; setIntro(history[historyIndex].message); renderHistory();
+    setStatus(`Restored ${history[historyIndex].name}.`, "ok"); rankSalesMessage(history[historyIndex].message);
+  });
 
   els.draft.addEventListener("click", async () => {
     const note = els.note.value.trim();
     if (!note) { setStatus("Add a few key points first.", "error"); els.note.focus(); return; }
     if (!deal.product) { setStatus("Choose a structure first.", "error"); return; }
+    rankingUI.card.hidden = true;
     syncDealFromInputs(); els.draft.disabled = true; els.draft.classList.add("is-loading"); els.draftLabel.textContent = "Writing your message…"; setStatus("", ""); els.alt.hidden = true;
     try {
       const result = await draftNote(note);
-      history.push(result.message); historyIndex = history.length - 1; setIntro(result.message); renderHistory();
+      addHistoryDraft(result.message); setIntro(result.message); renderHistory();
       if (result.subject) {
         suggestedSubject = result.subject;
         els.subject.value = result.subject;
       }
       if (result.alternative) { pendingAlternative = result.alternative; els.altText.textContent = result.alternative; els.alt.hidden = false; }
       setStatus(result.subject ? `Added to Intro message. Suggested subject: “${result.subject}”` : "Added to Intro message. Edit it freely.", "ok");
+      rankSalesMessage(result.message);
     } catch (error) { setStatus(`Couldn't draft: ${error?.message || "unknown error"}`, "error"); }
     finally { els.draft.disabled = false; els.draft.classList.remove("is-loading"); els.draftLabel.textContent = "Draft intro message"; }
   });
-  els.useAlt.addEventListener("click", () => { if (!pendingAlternative) return; history.push(pendingAlternative); historyIndex = history.length - 1; setIntro(pendingAlternative); renderHistory(); els.alt.hidden = true; setStatus("Switched to the alternative.", "ok"); });
+  els.useAlt.addEventListener("click", () => { if (!pendingAlternative) return; addHistoryDraft(pendingAlternative); setIntro(pendingAlternative); renderHistory(); els.alt.hidden = true; setStatus("Switched to the alternative.", "ok"); rankSalesMessage(pendingAlternative); });
   els.copyIntro.addEventListener("click", async () => {
     if (!els.intro.value.trim()) { toast("Nothing to copy yet.", "error"); return; }
     try { await navigator.clipboard.writeText(els.intro.value); toast("Intro message copied.", "ok"); } catch (_e) { toast("Couldn't copy. Select the text and copy it manually.", "error"); }
@@ -370,7 +451,49 @@
 
   // ---- AI setup -------------------------------------------------------------
   function syncPrefInputs() { Object.keys(prefEls).forEach((key) => { prefEls[key].value = prefs[key] || ""; }); }
-  function openSetup() { syncPrefInputs(); renderShortcuts(); openDrawer("setupDrawer"); setTimeout(() => prefEls.writingStyle.focus(), 60); }
+  function renderRankingMethodology() {
+    $("rankingMethodCount").textContent = `${orgRanking.indicators.length} active indicator${orgRanking.indicators.length === 1 ? "" : "s"}; all indicators have equal weight.`;
+  }
+  let rankingDraft = null;
+  function captureRankingDraft() {
+    if (!rankingDraft) return;
+    rankingDraft = rankingDraft.map((indicator, index) => ({
+      ...indicator,
+      name: $(`rankingName${index}`)?.value.trim() || "",
+      guidance: $(`rankingGuidance${index}`)?.value.trim() || "",
+    }));
+  }
+  function renderOrgRanking() {
+    $("orgRankingIndicators").innerHTML = rankingDraft.map((indicator, index) => `<section class="org-ranking-item">
+      <div class="org-ranking-item-head"><strong>Indicator ${index + 1}</strong><button type="button" class="link-btn danger-link" data-remove-ranking="${index}" aria-label="Remove indicator ${index + 1}">Remove</button></div>
+      <div class="field"><label for="rankingName${index}">Indicator name</label><input id="rankingName${index}" maxlength="120" value="${esc(indicator.name)}" data-testid="ranking-indicator-name-${index + 1}"></div>
+      <div class="field"><label for="rankingGuidance${index}">What should score well?</label><textarea id="rankingGuidance${index}" rows="3" maxlength="500" data-testid="ranking-indicator-guidance-${index + 1}">${esc(indicator.guidance)}</textarea></div>
+    </section>`).join("");
+  }
+  function openOrgRanking() {
+    rankingDraft = orgRanking.indicators.map((indicator) => ({ ...indicator }));
+    renderOrgRanking(); openDrawer("orgRankingDrawer");
+  }
+  function openSetup() { syncPrefInputs(); renderShortcuts(); renderRankingMethodology(); openDrawer("setupDrawer"); setTimeout(() => prefEls.writingStyle.focus(), 60); }
+  $("openOrgRanking").addEventListener("click", () => { closeDrawer("setupDrawer"); openOrgRanking(); });
+  $("addRankingIndicator").addEventListener("click", () => {
+    captureRankingDraft();
+    if (rankingDraft.length >= 20) { toast("You can configure up to 20 indicators.", "error"); return; }
+    rankingDraft.push({ id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name: "", guidance: "" }); renderOrgRanking();
+    $(`rankingName${rankingDraft.length - 1}`).focus();
+  });
+  $("orgRankingIndicators").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-remove-ranking]"); if (!button) return;
+    captureRankingDraft(); rankingDraft.splice(Number(button.dataset.removeRanking), 1); renderOrgRanking();
+  });
+  $("resetRanking").addEventListener("click", () => { rankingDraft = DEFAULT_RANKING_INDICATORS.map((indicator) => ({ ...indicator })); renderOrgRanking(); });
+  $("saveRanking").addEventListener("click", () => {
+    captureRankingDraft();
+    if (!rankingDraft.length) { toast("Keep at least one ranking indicator.", "error"); return; }
+    const incomplete = rankingDraft.findIndex((indicator) => !indicator.name || !indicator.guidance);
+    if (incomplete >= 0) { toast("Complete each indicator name and scoring guidance.", "error"); $(`rankingName${incomplete}`).focus(); return; }
+    orgRanking = { indicators: rankingDraft.map((indicator) => ({ ...indicator })) }; store.set(KEYS.ranking, orgRanking); renderRankingMethodology(); closeDrawer("orgRankingDrawer"); toast("Organization ranking indicators saved.", "ok");
+  });
   $("saveSetup").addEventListener("click", () => {
     Object.keys(prefEls).forEach((key) => { prefs[key] = prefEls[key].value.trim(); });
     store.set(KEYS.prefs, prefs); renderContext(); renderGuidance(); closeDrawer("setupDrawer"); toast("AI setup saved.", "ok");
@@ -380,6 +503,26 @@
   // ---- review & send --------------------------------------------------------
   let activeFormat = "full";
   const review = { modal: $("reviewModal"), to: $("reviewTo"), subject: $("reviewSubject"), intro: $("reviewIntro"), preview: $("dealPreview"), full: $("fmtTabFull"), highlights: $("fmtTabHighlights") };
+  const sms = { modal: $("smsModal"), enabled: $("includeSms"), to: $("smsTo"), message: $("smsMessage"), count: $("smsCount"), error: $("smsError") };
+  const attachmentInput = $("attachmentInput"), attachmentDropZone = $("attachmentDropZone"), attachmentList = $("attachmentList");
+  let attachments = [];
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    const units = ["KB", "MB", "GB", "TB"]; let value = bytes / 1024; let unit = 0;
+    while (value >= 1024 && unit < units.length - 1) { value /= 1024; unit += 1; }
+    return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[unit]}`;
+  }
+  function renderAttachments() {
+    attachmentList.innerHTML = attachments.map((file, index) => `<li class="attachment-item"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-copy"/></svg><span class="attachment-name" title="${esc(file.name)}">${esc(file.name)}</span><span class="attachment-size">${formatFileSize(file.size)}</span><button class="attachment-remove" type="button" data-remove-attachment="${index}" aria-label="Remove ${esc(file.name)}" title="Remove attachment"><svg class="icon icon-sm" aria-hidden="true"><use href="#i-x"/></svg></button></li>`).join("");
+  }
+  function addAttachments(fileList) { attachments.push(...Array.from(fileList || [])); renderAttachments(); }
+  $("chooseAttachments").addEventListener("click", () => attachmentInput.click());
+  attachmentDropZone.addEventListener("click", (event) => { if (!event.target.closest("button")) attachmentInput.click(); });
+  attachmentInput.addEventListener("change", () => { addAttachments(attachmentInput.files); attachmentInput.value = ""; });
+  ["dragenter", "dragover"].forEach((type) => attachmentDropZone.addEventListener(type, (event) => { event.preventDefault(); attachmentDropZone.classList.add("is-dragging"); }));
+  ["dragleave", "dragend"].forEach((type) => attachmentDropZone.addEventListener(type, (event) => { event.preventDefault(); if (!attachmentDropZone.contains(event.relatedTarget)) attachmentDropZone.classList.remove("is-dragging"); }));
+  attachmentDropZone.addEventListener("drop", (event) => { event.preventDefault(); attachmentDropZone.classList.remove("is-dragging"); addAttachments(event.dataTransfer?.files); });
+  attachmentList.addEventListener("click", (event) => { const button = event.target.closest("[data-remove-attachment]"); if (!button) return; attachments.splice(Number(button.dataset.removeAttachment), 1); renderAttachments(); });
   function previewTerms() {
     return [{ label: "Direction", value: deal.direction }, { label: "Notional", value: deal.notional }, ...dynamicFieldsFor(getSchema(deal.product)).map((f) => ({ label: f.label, value: deal.fields[f.key] }))].filter((t) => t.value);
   }
@@ -408,18 +551,47 @@
     lastFocus = document.activeElement; review.modal.hidden = false; document.body.classList.add("no-scroll"); setTimeout(() => review.subject.focus(), 30);
   }
   function closeReview() { if (review.modal.hidden) return; review.modal.hidden = true; if (!document.querySelector(".drawer.is-open")) document.body.classList.remove("no-scroll"); lastFocus?.focus?.(); }
+  function closeSms() { sms.modal.hidden = true; if (review.modal.hidden && !document.querySelector(".drawer.is-open")) document.body.classList.remove("no-scroll"); }
+  function updateSmsCount() { sms.count.textContent = `${sms.message.value.length} / 200`; }
+  sms.message.addEventListener("input", updateSmsCount);
   review.subject.addEventListener("input", () => { els.subject.value = review.subject.value; });
   review.intro.addEventListener("input", () => { els.intro.value = review.intro.value; updateIntroCount(); });
   review.full.addEventListener("click", () => setFormat("full")); review.highlights.addEventListener("click", () => setFormat("highlights"));
   $("openReview").addEventListener("click", openReview);
-  $("sendBtn").addEventListener("click", () => {
+  sms.enabled.addEventListener("change", () => { $("sendBtn").lastChild.textContent = sms.enabled.checked ? "Review text & send" : "Send email"; });
+  async function prepareSmsReview() {
+    const client = activeClient();
+    if (!client.clientPhone) { toast("Add a mobile number to the client profile first.", "error"); closeReview(); openClients("edit"); $("cfPhone").focus(); return; }
+    const dealLink = window.location.href;
+    sms.to.value = client.clientPhone;
+    sms.message.value = ""; sms.error.textContent = "Creating a concise AI summary…"; sms.error.className = "hint"; updateSmsCount();
+    sms.modal.hidden = false; document.body.classList.add("no-scroll");
+    try {
+      const response = await fetch("/v1/ui/sms-summary", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sales_pitch: review.intro.value.trim() || review.subject.value.trim(), deal_link: dealLink }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+      sms.message.value = String(data.message || "").slice(0, 200); sms.error.textContent = "Edit the message if needed, then send it with the email."; updateSmsCount();
+    } catch (error) {
+      sms.error.textContent = `Couldn't create the AI summary: ${error?.message || "unknown error"}`; sms.error.className = "hint is-error";
+    }
+  }
+  $("sendBtn").addEventListener("click", async () => {
     if (!activeClient().id) { toast("Choose a client before sending.", "error"); return; }
-    closeReview(); toast(`Email to ${activeClient().clientCompany || activeClient().clientName} is ready. Sending runs through the Trade Builder's email service.`, "ok");
+    if (sms.enabled.checked) { await prepareSmsReview(); return; }
+    const attachmentNote = attachments.length ? ` with ${attachments.length} attachment${attachments.length === 1 ? "" : "s"}` : "";
+    closeReview(); toast(`Email to ${activeClient().clientCompany || activeClient().clientName}${attachmentNote} is ready. Delivery runs through the Trade Builder's email service.`, "ok");
+  });
+  $("sendEmailSmsBtn").addEventListener("click", () => {
+    if (!sms.to.value.trim()) { sms.error.textContent = "Enter the client's mobile number."; sms.error.className = "hint is-error"; sms.to.focus(); return; }
+    if (!sms.message.value.trim()) { sms.error.textContent = "Add an SMS summary before continuing."; sms.error.className = "hint is-error"; sms.message.focus(); return; }
+    const client = activeClient(); const attachmentNote = attachments.length ? ` with ${attachments.length} email attachment${attachments.length === 1 ? "" : "s"}` : ""; closeSms(); closeReview();
+    toast(`Email and text to ${client.clientCompany || client.clientName}${attachmentNote} are ready. Delivery runs through the Trade Builder's email and SMS services.`, "ok");
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     if (!accountMenu.hidden) { setMenu(false); avatarBtn.focus(); return; }
+    if (!sms.modal.hidden) { closeSms(); return; }
     if (!review.modal.hidden) { closeReview(); return; }
     const open = document.querySelector(".drawer.is-open"); if (open) { closeDrawer(open.id); return; }
     if (mobileQuery.matches && document.body.classList.contains("ai-open")) setPanel(false);

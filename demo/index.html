@@ -44,6 +44,7 @@
         <div class="account-menu" id="accountMenu" role="menu" hidden data-testid="account-menu">
           <div class="account-head"><span class="avatar avatar-lg">You</span><div><strong>Your account</strong><span>Advisor workspace</span></div></div>
           <button type="button" role="menuitem" data-account="setup" data-testid="account-ai-setup"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span><strong>AI setup</strong><small>Writing style, tone and guidance</small></span></button>
+          <button type="button" role="menuitem" data-account="ranking" data-testid="account-ranking-setup"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg><span><strong>Organization ranking</strong><small>Configure sales message indicators</small></span></button>
           <button type="button" role="menuitem" data-account="shortcuts" data-testid="account-shortcuts"><svg class="icon" aria-hidden="true"><use href="#i-bookmark"/></svg><span><strong>Saved key points</strong><small>Reusable shortcuts for drafting</small></span></button>
           <button type="button" role="menuitem" data-account="clients" data-testid="account-clients"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><span><strong>Client profiles</strong><small>Context the AI uses per client</small></span></button>
         </div>
@@ -176,6 +177,15 @@
       <button class="btn btn-primary btn-block btn-lg" id="draftBtn" type="button" data-testid="ai-draft-button"><svg class="icon" aria-hidden="true"><use href="#i-pen"/></svg><span id="draftBtnLabel">Draft intro message</span></button>
       <p class="ai-status" id="aiStatus" role="status" data-testid="ai-draft-status"></p>
 
+      <section class="ranking-card" id="rankingCard" hidden aria-live="polite" data-testid="sales-message-ranking">
+        <div class="ranking-head"><div><span class="eyebrow">Sales message strength</span><h3 id="rankingTitle">Evaluating message…</h3></div><span class="ranking-score" id="rankingScore"></span></div>
+        <div class="ranking-meter" id="rankingMeter" role="meter" aria-label="Sales message positioning score" aria-valuemin="0" aria-valuemax="5"><span id="rankingMarker"></span></div>
+        <div class="ranking-scale"><span>Poor</span><span>Developing</span><span>Strong</span></div>
+        <p class="ranking-note" id="rankingNote"></p>
+        <ul class="ranking-indicators" id="rankingIndicators"></ul>
+        <button type="button" class="link-btn" id="recheckRanking" data-testid="recheck-message-ranking">Recheck edited message</button>
+      </section>
+
       <div class="ai-block history" id="aiHistory" hidden>
         <div class="block-head"><h3>Drafts</h3><span class="block-meta" id="aiHistoryCount"></span></div>
         <div class="pill-row" id="aiHistoryChips"></div>
@@ -210,6 +220,17 @@
         </div>
         <div class="field"><label for="reviewSubject">Subject</label><input id="reviewSubject" type="text" data-testid="review-subject-input"></div>
         <div class="field"><label for="reviewIntro">Intro message</label><textarea id="reviewIntro" rows="5" placeholder="Leave blank to send the termsheet only." data-testid="review-intro-message-input"></textarea></div>
+        <div class="field attachment-field">
+          <label>Attachments</label>
+          <div class="attachment-drop" id="attachmentDropZone" data-testid="attachment-drop-zone">
+            <input type="file" id="attachmentInput" multiple hidden data-testid="attachment-file-input">
+            <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+            <div><strong>Drop files here</strong><span>or <button type="button" class="link-btn" id="chooseAttachments" data-testid="attachment-browse-button">browse files</button></span></div>
+            <small>Any file type · attached to the email</small>
+          </div>
+          <ul class="attachment-list" id="attachmentList" aria-live="polite" data-testid="attachment-list"></ul>
+        </div>
+        <label class="sms-option"><input type="checkbox" id="includeSms" data-testid="review-include-sms"><span><strong>Also send a text message</strong><small>Review an AI summary before sending it to the client.</small></span></label>
         <div class="format-tabs" role="tablist" aria-label="Email format">
           <button class="format-tab is-active" type="button" role="tab" aria-selected="true" id="fmtTabFull" data-testid="format-full-termsheet-tab"><strong>Full termsheet</strong><span>Complete pricing &amp; legals</span></button>
           <button class="format-tab" type="button" role="tab" aria-selected="false" id="fmtTabHighlights" data-testid="format-deal-highlights-tab"><strong>Deal highlights</strong><span>Key levels &amp; payoff only</span></button>
@@ -220,6 +241,19 @@
         <button class="btn" type="button" data-close="review" data-testid="review-cancel-button">Cancel</button>
         <button class="btn btn-primary" type="button" id="sendBtn" data-testid="review-send-button"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>Send email</button>
       </div>
+    </section>
+  </div>
+
+  <div class="modal" id="smsModal" role="dialog" aria-modal="true" aria-labelledby="smsTitle" hidden data-testid="sms-review-modal">
+    <div class="modal-scrim" data-close="sms"></div>
+    <section class="modal-card modal-sm">
+      <div class="modal-head"><div><span class="eyebrow">Text message</span><h2 id="smsTitle">Review SMS</h2></div><button class="icon-btn" type="button" data-close="sms" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="modal-body">
+        <div class="field"><label for="smsTo">Client mobile number</label><input id="smsTo" type="tel" autocomplete="tel" placeholder="Add the client's mobile number" data-testid="sms-recipient-input"></div>
+        <div class="field"><label for="smsMessage">AI summary and deal link <span class="muted">(max 200 characters)</span></label><textarea id="smsMessage" rows="4" maxlength="200" data-testid="sms-message-input"></textarea><small class="block-meta" id="smsCount" aria-live="polite">0 / 200</small></div>
+        <p class="hint" id="smsError" role="status"></p>
+      </div>
+      <div class="modal-foot"><button class="btn" type="button" data-close="sms">Back</button><button class="btn btn-primary" type="button" id="sendEmailSmsBtn" data-testid="send-email-and-sms-button">Send email &amp; text</button></div>
     </section>
   </div>
 
@@ -239,6 +273,7 @@
             <div class="field"><label for="cfName">Contact name</label><input id="cfName" data-key="clientName" data-testid="client-name-input"></div>
             <div class="field"><label for="cfCompany">Company</label><input id="cfCompany" data-key="clientCompany" data-testid="client-company-input"></div>
             <div class="field"><label for="cfEmail">Email</label><input id="cfEmail" type="email" data-key="clientEmail" data-testid="client-email-input"></div>
+            <div class="field"><label for="cfPhone">Mobile number</label><input id="cfPhone" type="tel" autocomplete="tel" data-key="clientPhone" data-testid="client-phone-input"></div>
             <div class="field"><label for="cfIndustry">Industry</label><input id="cfIndustry" data-key="clientIndustry" placeholder="e.g. Manufacturing" data-testid="client-industry-input"></div>
             <div class="field"><label for="cfRisk">Risk appetite</label><select id="cfRisk" data-key="riskAppetite" data-testid="client-risk-appetite-select"><option>Conservative</option><option>Balanced</option><option>Growth-oriented</option><option>Not set</option></select></div>
             <div class="field"><label for="cfHorizon">Hedging horizon</label><select id="cfHorizon" data-key="hedgingHorizon" data-testid="client-hedging-horizon-select"><option>Up to 3 months</option><option>3–12 months</option><option>12–24 months</option><option>Not set</option></select></div>
@@ -267,10 +302,31 @@
         <div class="field"><label for="prefPositioning">Sales positioning</label><textarea id="prefPositioning" rows="3" data-testid="ai-sales-positioning-input"></textarea><p class="hint">Where to put the emphasis. It never adds facts.</p></div>
         <div class="setup-divider"><span>Guidance</span></div>
         <div class="field"><label for="prefAdvisorGuidance">Draft guidance</label><textarea id="prefAdvisorGuidance" rows="10" data-testid="ai-advisor-guidance-input" placeholder="Add any guidance for the draft. You can organize it by market, client, product, or any other headings that work for you."></textarea><p class="hint">A sample is provided as a style reference. Its market commentary, numbers and product claims are examples only; the AI should use facts from the current deal only. Edit or replace it with your own guidance.</p></div>
+        <section class="ranking-methodology" aria-labelledby="rankingMethodTitle">
+          <div class="setup-divider"><span id="rankingMethodTitle">Sales message ranking</span></div>
+          <p>Every draft is scored from 0 to 5 against your organization’s active indicators. The equal-weight average maps to red (poor), amber (developing), or green (strong).</p>
+          <div class="method-gradient" aria-hidden="true"></div>
+          <div class="ranking-scale"><span>Poor · 0</span><span>Developing · 2.3</span><span>Strong · 3.8–5</span></div>
+          <p class="hint" id="rankingMethodCount"></p>
+          <button class="link-btn" type="button" id="openOrgRanking" data-testid="open-organization-ranking">View organization indicators</button>
+        </section>
         <div class="setup-divider" id="shortcutsSection"><span>Saved key points</span></div>
         <ul class="manage-list" id="manageShortcuts" data-testid="setup-shortcut-list"></ul>
       </div>
       <div class="drawer-foot"><button class="btn" type="button" id="resetSetup" data-testid="ai-setup-reset-button">Reset to defaults</button><button class="btn btn-primary" type="button" id="saveSetup" data-testid="ai-setup-save-button">Save setup</button></div>
+    </section>
+  </div>
+
+  <div class="drawer" id="orgRankingDrawer" aria-hidden="true" data-testid="organization-ranking-setup">
+    <div class="drawer-scrim" data-close="orgRanking"></div>
+    <section class="drawer-panel drawer-narrow" role="dialog" aria-modal="true" aria-labelledby="orgRankingTitle">
+      <div class="drawer-head"><div><span class="eyebrow">Organization defaults</span><h2 id="orgRankingTitle">Sales message indicators</h2><p>These indicators and equal weights apply to every advisor in this demo organization.</p></div><button class="icon-btn" type="button" data-close="orgRanking" aria-label="Close"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+      <div class="drawer-body">
+        <p class="hint">Indicators score from 0 (missing or unsupported) to 5 (excellent). Averages map to red below 2.3, amber from 2.3 to 3.7, and green from 3.8.</p>
+        <div class="org-ranking-list" id="orgRankingIndicators" data-testid="organization-ranking-indicators"></div>
+        <button class="btn btn-block" type="button" id="addRankingIndicator" data-testid="add-ranking-indicator">Add custom indicator</button>
+      </div>
+      <div class="drawer-foot"><button class="btn" type="button" id="resetRanking" data-testid="reset-ranking-indicators">Restore defaults</button><button class="btn btn-primary" type="button" id="saveRanking" data-testid="save-ranking-indicators">Save indicators</button></div>
     </section>
   </div>
 

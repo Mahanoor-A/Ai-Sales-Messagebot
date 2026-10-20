@@ -88,6 +88,11 @@ Used only by the service's own web page. It needs no key but rejects anything
 that isn't a same-origin browser request (`403`) and is rate-limited (`429`).
 Integrations must use `/v1/ai/sales-message` with a key.
 
+The built-in page also uses `POST /v1/ui/rank-sales-message` to evaluate a draft
+against the organization indicators configured in the demo. It returns a 0–5
+score and evidence for each indicator. This endpoint has the same same-origin
+and rate limits and is not an integration API.
+
 ### `GET /healthz`
 
 No key needed. Returns `{"status": "ok", "key_configured": true, "auth_required": true}`.

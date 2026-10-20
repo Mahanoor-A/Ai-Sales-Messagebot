@@ -1,4 +1,5 @@
 import secrets
+import json
 import threading
 import time
 from collections import defaultdict, deque
@@ -9,12 +10,47 @@ from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI
+from pydantic import BaseModel, Field
 
 from .import ai
 from .config import settings
 from .schemas import SalesMessageRequest, SalesMessageResponse
 
 DEMO_DIR = Path(__file__).resolve().parents[2] / "demo"
+
+
+class SmsSummaryRequest(BaseModel):
+    sales_pitch: str = Field(..., min_length=1, max_length=8000)
+    deal_link: str = Field(..., min_length=1, max_length=1000)
+
+
+class SmsSummaryResponse(BaseModel):
+    message: str
+
+
+class RankingIndicator(BaseModel):
+    id: str = Field(..., min_length=1, max_length=64)
+    name: str = Field(..., min_length=1, max_length=120)
+    guidance: str = Field(..., min_length=1, max_length=500)
+
+
+class RankMessageRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=8000)
+    indicators: list[RankingIndicator] = Field(..., min_length=1, max_length=20)
+    client_context: str | None = Field(default=None, max_length=4000)
+    deal_context: str | None = Field(default=None, max_length=4000)
+
+
+class RankedIndicator(BaseModel):
+    id: str
+    score: int = Field(..., ge=0, le=5)
+    evidence: str
+
+
+class RankMessageResponse(BaseModel):
+    indicators: list[RankedIndicator]
+    overall_score: float
+    band: str
 
 
 def get_client() -> OpenAI:
@@ -213,6 +249,105 @@ def ui_sales_message(
     client: OpenAI = Depends(get_client),
 ):
     return _generate(req, client)
+
+
+@app.post(
+    "/v1/ui/sms-summary",
+    response_model=SmsSummaryResponse,
+    dependencies=[Depends(require_same_origin_and_rate_limit), Depends(require_ai_access)],
+    tags=["ui"],
+)
+def ui_sms_summary(req: SmsSummaryRequest, client: OpenAI = Depends(get_client)):
+    link_suffix = f" Deal: {req.deal_link}"
+    if len(link_suffix) > 200:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail="The deal link is too long for a 200-character SMS.")
+    summary_budget = max(0, 200 - len(link_suffix))
+    try:
+        completion = client.chat.completions.create(
+            model=settings.model,
+            temperature=0.3,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Summarize the provided client sales pitch as one concise, "
+                        "client-ready SMS sentence. Use only facts in the pitch. "
+                        f"Keep it within {summary_budget} characters. Output only the summary."
+                    ),
+                },
+                {"role": "user", "content": req.sales_pitch},
+            ],
+        )
+        summary = (completion.choices[0].message.content or "").strip()
+        if len(summary) > summary_budget:
+            summary = summary[:summary_budget].rsplit(" ", 1)[0]
+        message = f"{summary.rstrip(' .')} {link_suffix.strip()}".strip()
+        return SmsSummaryResponse(message=message[:200])
+    except Exception as exc:
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY,
+            detail=f"The AI provider could not be reached: {exc}",
+        ) from exc
+
+
+@app.post(
+    "/v1/ui/rank-sales-message",
+    response_model=RankMessageResponse,
+    dependencies=[Depends(require_same_origin_and_rate_limit), Depends(require_ai_access)],
+    tags=["ui"],
+)
+def ui_rank_sales_message(req: RankMessageRequest, client: OpenAI = Depends(get_client)):
+    if len({indicator.id for indicator in req.indicators}) != len(req.indicators):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Indicator IDs must be unique.")
+    rubric = [{"id": item.id, "name": item.name, "guidance": item.guidance} for item in req.indicators]
+    user_data = {
+        "sales_message": req.message,
+        "client_context": req.client_context or "Not provided",
+        "deal_context": req.deal_context or "Not provided",
+        "indicators": rubric,
+    }
+    try:
+        completion = client.chat.completions.create(
+            model=settings.model,
+            temperature=0.2,
+            response_format={"type": "json_object"},
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Evaluate a client-facing FX sales message against the supplied organization indicators. "
+                        "Score each indicator from 0 to 5: 0 means absent or unsupported, 1 poor, 2 weak, "
+                        "3 adequate, 4 strong, 5 excellent. Judge only evidence in the message and supplied "
+                        "client/deal context. Never reward invented prices, levels, claims, urgency, or trade "
+                        "confirmation links. For each item give one short evidence-based reason. Return one JSON "
+                        'object with "indicators": [{"id": string, "score": integer, "evidence": string}] and '
+                        'include every supplied indicator exactly once.'
+                    ),
+                },
+                {"role": "user", "content": json.dumps(user_data, ensure_ascii=False)},
+            ],
+        )
+        data = json.loads(completion.choices[0].message.content or "{}")
+        raw = {str(item.get("id")): item for item in data.get("indicators", []) if isinstance(item, dict)}
+        ranked = []
+        for indicator in req.indicators:
+            item = raw.get(indicator.id, {})
+            try:
+                score = max(0, min(5, int(item.get("score", 0))))
+            except (TypeError, ValueError):
+                score = 0
+            evidence = str(item.get("evidence") or "No supporting evidence was identified.")[:300]
+            ranked.append(RankedIndicator(id=indicator.id, score=score, evidence=evidence))
+        overall = round(sum(row.score for row in ranked) / len(ranked), 1)
+        band = "red" if overall < 2.3 else "amber" if overall < 3.8 else "green"
+        return RankMessageResponse(indicators=ranked, overall_score=overall, band=band)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY,
+            detail=f"The AI provider could not be reached: {exc}",
+        ) from exc
 
 
 def _generate(req: SalesMessageRequest, client: OpenAI) -> SalesMessageResponse:
