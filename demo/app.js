@@ -272,7 +272,6 @@
     els.ctxClient.textContent = c.clientCompany || c.clientName || "No client";
     els.ctxProduct.textContent = deal.product ? `${displayPair(deal.pair)} · ${deal.product}` : "No product";
     els.ctxStyle.textContent = `${prefs.writingStyle || "Custom"} · ${prefs.tone || "custom tone"}`;
-    document.querySelectorAll("[data-style]").forEach((b) => { const on = b.dataset.style === prefs.writingStyle; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
   }
   function renderGuidance() {
     const c = activeClient(); const copy = termsheetCopy(deal.product, deal.pair, deal.notionalCcy);
@@ -411,8 +410,6 @@
     if (!els.intro.value.trim()) { toast("Nothing to copy yet.", "error"); return; }
     try { await navigator.clipboard.writeText(els.intro.value); toast("Intro message copied.", "ok"); } catch (_e) { toast("Couldn't copy. Select the text and copy it manually.", "error"); }
   });
-  document.querySelectorAll("[data-style]").forEach((b) => b.addEventListener("click", () => { prefs.writingStyle = b.dataset.style; store.set(KEYS.prefs, prefs); renderContext(); }));
-
   // ---- saved key points -----------------------------------------------------
   const sc = { chips: $("shortcutChips"), empty: $("shortcutEmpty"), saveBtn: $("saveShortcutBtn"), saveRow: $("shortcutSaveRow"), name: $("shortcutName"), confirm: $("shortcutConfirm"), cancel: $("shortcutCancel") };
   function saveShortcuts() { store.set(KEYS.shortcuts, shortcuts); }
