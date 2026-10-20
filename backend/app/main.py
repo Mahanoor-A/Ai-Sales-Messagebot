@@ -1,5 +1,6 @@
 import secrets
 import json
+import logging
 import threading
 import time
 from collections import defaultdict, deque
@@ -17,6 +18,7 @@ from .config import settings
 from .schemas import SalesMessageRequest, SalesMessageResponse
 
 DEMO_DIR = Path(__file__).resolve().parents[2] / "demo"
+logger = logging.getLogger(__name__)
 
 
 class SmsSummaryRequest(BaseModel):
@@ -63,6 +65,23 @@ def get_client() -> OpenAI:
             ),
         )
     return OpenAI(api_key=settings.openai_api_key)
+
+
+def provider_http_error(exc: Exception) -> HTTPException:
+    """Log upstream failures for operators without returning SDK internals to browsers."""
+    logger.error("OpenAI request failed (%s)", type(exc).__name__, exc_info=True)
+    error_name = type(exc).__name__
+    if error_name == "APIConnectionError":
+        detail = "Could not connect to OpenAI from this service. Check outbound network access and retry."
+    elif error_name == "APITimeoutError":
+        detail = "The OpenAI request timed out. Please retry."
+    elif error_name == "AuthenticationError":
+        detail = "OpenAI rejected the configured API key. Update OPENAI_API_KEY in the hosting environment."
+    elif error_name == "RateLimitError":
+        detail = "OpenAI rejected the request because of a rate or account limit. Check the OpenAI project limits and billing."
+    else:
+        detail = f"The OpenAI request failed ({error_name}). Check the service logs for details."
+    return HTTPException(status.HTTP_502_BAD_GATEWAY, detail=detail)
 
 
 def require_token(request: Request) -> None:
@@ -284,10 +303,7 @@ def ui_sms_summary(req: SmsSummaryRequest, client: OpenAI = Depends(get_client))
         message = f"{summary.rstrip(' .')} {link_suffix.strip()}".strip()
         return SmsSummaryResponse(message=message[:200])
     except Exception as exc:
-        raise HTTPException(
-            status.HTTP_502_BAD_GATEWAY,
-            detail=f"The AI provider could not be reached: {exc}",
-        ) from exc
+        raise provider_http_error(exc) from exc
 
 
 @app.post(
@@ -344,10 +360,7 @@ def ui_rank_sales_message(req: RankMessageRequest, client: OpenAI = Depends(get_
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(
-            status.HTTP_502_BAD_GATEWAY,
-            detail=f"The AI provider could not be reached: {exc}",
-        ) from exc
+        raise provider_http_error(exc) from exc
 
 
 def _generate(req: SalesMessageRequest, client: OpenAI) -> SalesMessageResponse:
@@ -358,10 +371,7 @@ def _generate(req: SalesMessageRequest, client: OpenAI) -> SalesMessageResponse:
     except ai.AiGenerationError as exc:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
     except Exception as exc:  # openai errors, network failures
-        raise HTTPException(
-            status.HTTP_502_BAD_GATEWAY,
-            detail=f"The AI provider could not be reached: {exc}",
-        ) from exc
+        raise provider_http_error(exc) from exc
 
     return SalesMessageResponse(
         message=result.message,
