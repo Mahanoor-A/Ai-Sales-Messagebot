@@ -196,7 +196,7 @@ body.ai-open .ai-panel { display: flex; animation: slideIn .25s ease-out; }
 .switch input:focus-visible + .track { box-shadow: 0 0 0 3px var(--brand-ring); }
 #draftBtn.is-loading .icon { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.ai-status { min-height: 0; color: var(--muted); font-size: 12.5px; line-height: 1.5; margin-top: 0; overflow-wrap: anywhere; }
+.ai-status { flex: 0 0 auto; min-height: 0; margin: 0; padding-block: 2px; color: var(--muted); font-size: 12.5px; line-height: 1.5; overflow-wrap: anywhere; }
 .ai-status:empty { display: none; }
 .ai-status.is-ok { color: var(--ok); } .ai-status.is-error { color: var(--danger); }
 .history { margin-top: 4px; padding-top: 14px; border-top: 1px dashed var(--line); }
