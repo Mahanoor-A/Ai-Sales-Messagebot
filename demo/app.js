@@ -129,6 +129,12 @@
   };
   const prefEls = { writingStyle: $("prefWritingStyle"), tone: $("prefTone"), salesPositioning: $("prefPositioning"), advisorGuidance: $("prefAdvisorGuidance") };
   const rankingUI = { card: $("rankingCard"), title: $("rankingTitle"), score: $("rankingScore"), meter: $("rankingMeter"), marker: $("rankingMarker"), note: $("rankingNote"), indicators: $("rankingIndicators") };
+  const introRankingClasses = ["is-ranked", "is-red", "is-amber", "is-green", "is-ranking-stale"];
+  function setIntroRanking(band) {
+    els.intro.classList.remove(...introRankingClasses);
+    if (["red", "amber", "green"].includes(band)) els.intro.classList.add("is-ranked", `is-${band}`);
+    else if (band === "stale") els.intro.classList.add("is-ranking-stale");
+  }
   let suggestedSubject = "";
 
   function setStatus(text, kind) { els.status.textContent = text; els.status.className = `ai-status${kind ? ` is-${kind}` : ""}`; }
@@ -307,7 +313,8 @@
 
   function indicatorBand(score) { return score < 2.3 ? "red" : score < 3.8 ? "amber" : "green"; }
   async function rankSalesMessage(message) {
-    if (!message?.trim()) { rankingUI.card.hidden = true; return; }
+    if (!message?.trim()) { rankingUI.card.hidden = true; setIntroRanking(""); return; }
+    setIntroRanking("");
     rankingUI.card.hidden = false; rankingUI.card.className = "ranking-card is-loading";
     rankingUI.title.textContent = "Evaluating message…"; rankingUI.score.textContent = "";
     rankingUI.note.textContent = "Checking the organization’s indicators."; rankingUI.indicators.innerHTML = "";
@@ -322,6 +329,7 @@
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+      setIntroRanking(data.band);
       rankingUI.card.className = `ranking-card is-${data.band}`;
       rankingUI.title.textContent = data.band === "green" ? "Strong sales positioning" : data.band === "amber" ? "Developing sales positioning" : "Poor sales positioning";
       rankingUI.score.textContent = `${Number(data.overall_score).toFixed(1)} / 5`;
@@ -334,6 +342,7 @@
         return `<li class="ranking-indicator is-${indicatorBand(result.score)}"><div><strong>${esc(indicator.name)}</strong><span>${result.score} / 5</span></div><p>${esc(result.evidence)}</p></li>`;
       }).join("");
     } catch (error) {
+      setIntroRanking("");
       rankingUI.card.className = "ranking-card is-error"; rankingUI.title.textContent = "Ranking unavailable";
       rankingUI.note.textContent = error?.message || "Could not evaluate this message.";
     }
@@ -341,6 +350,7 @@
   $("recheckRanking").addEventListener("click", () => rankSalesMessage(els.intro.value.trim()));
   els.intro.addEventListener("input", () => {
     if (!rankingUI.card.hidden && !rankingUI.card.classList.contains("is-loading")) {
+      setIntroRanking("stale");
       rankingUI.card.classList.add("is-stale"); rankingUI.title.textContent = "Message edited";
       rankingUI.score.textContent = "Stale"; rankingUI.note.textContent = "Recheck the ranking to update the score for this version.";
     }
@@ -367,7 +377,7 @@
     els.historyChips.innerHTML = history.map((draft, i) => `<span class="draft-entry"><button type="button" class="pill${i === historyIndex ? " is-active" : ""}" data-i="${i}" title="${esc(draft.name)}" aria-pressed="${i === historyIndex}" data-testid="ai-history-draft-${i + 1}">${esc(draft.name)}</button><button type="button" class="draft-remove" data-delete-draft="${i}" aria-label="Delete ${esc(draft.name)}" title="Delete draft"><svg class="icon icon-xs" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join("");
   }
   function clearActiveDraft() {
-    setIntro(""); els.subject.value = ""; suggestedSubject = ""; pendingAlternative = ""; els.alt.hidden = true; rankingUI.card.hidden = true;
+    setIntro(""); setIntroRanking(""); els.subject.value = ""; suggestedSubject = ""; pendingAlternative = ""; els.alt.hidden = true; rankingUI.card.hidden = true;
   }
   els.historyChips.addEventListener("click", (event) => {
     const remove = event.target.closest("[data-delete-draft]");
@@ -390,7 +400,7 @@
     const note = els.note.value.trim();
     if (!note) { setStatus("Add a few key points first.", "error"); els.note.focus(); return; }
     if (!deal.product) { setStatus("Choose a structure first.", "error"); return; }
-    rankingUI.card.hidden = true;
+    rankingUI.card.hidden = true; setIntroRanking("");
     syncDealFromInputs(); els.draft.disabled = true; els.draft.classList.add("is-loading"); els.draftLabel.textContent = "Writing your message…"; setStatus("", ""); els.alt.hidden = true;
     try {
       const result = await draftNote(note);

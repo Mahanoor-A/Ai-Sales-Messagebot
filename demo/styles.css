@@ -150,6 +150,11 @@ details[open] > summary .chev { transform: rotate(180deg); }
 .grounding-col li + li { margin-top: 6px; }
 
 .intro-field textarea { background: #fbfcff; }
+.intro-field textarea.is-ranked { transition: border-color .2s ease, background .2s ease, box-shadow .2s ease; }
+.intro-field textarea.is-ranked.is-red { border-color: #d9867e; background: linear-gradient(135deg, #fff0ef 0%, #fffaf2 100%); box-shadow: inset 4px 0 #c9463e; }
+.intro-field textarea.is-ranked.is-amber { border-color: #e1c36e; background: linear-gradient(135deg, #fff8e7 0%, #fffdf5 100%); box-shadow: inset 4px 0 #e9a23b; }
+.intro-field textarea.is-ranked.is-green { border-color: #8bc59f; background: linear-gradient(135deg, #eaf7ee 0%, #f8fcf9 100%); box-shadow: inset 4px 0 #29975b; }
+.intro-field textarea.is-ranking-stale { border-color: var(--line-strong); background: linear-gradient(135deg, #f0f2f6 0%, #fbfcff 100%); box-shadow: inset 4px 0 #aab2c4; }
 .intro-field textarea.flash { animation: flash 1.4s ease-out; }
 @keyframes flash { 0% { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(63,74,143,.28); background: #eef1fc; } 100% { box-shadow: 0 0 0 0 rgba(63,74,143,0); background: #fbfcff; } }
 
